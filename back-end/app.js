@@ -1,7 +1,7 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const routes = require('./routes');
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import routes from './routes/index.js';
 
 dotenv.config();
 
@@ -11,4 +11,4 @@ app.use(cors());
 app.use(express.json());
 app.use('/api', routes);
 
-module.exports = app;
+export default app;

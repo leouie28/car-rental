@@ -6,10 +6,99 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  output   = "../lib/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model client {
+  id                Int                @id                @default(autoincrement())
+  firstName         String?
+  lastName         String?
+  phone             String?
+  email             String             @unique
+  password          String
+  birthDate         String?
+  address           String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  booking           booking[]
+  rating            rating[]
+}
+
+model car {
+  id                Int                @id                @default(autoincrement())
+  make              String
+  model             String
+  year              Int
+  color             String?
+  transmission      String?            @default("automatic")
+  fuelType          String?
+  seatCount         Int?
+  doorCount         Int?
+  otherDetails      String?
+  features          String?
+
+  dailyPrice        Float
+  withDriverDailyPrice  Float?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  booking           booking[]
+  rating            rating[]
+  images            image[]
+}
+
+model image {
+  id                Int                @id                @default(autoincrement())
+  carId             Int
+  url               String
+  externalId        String?
+  createdAt         DateTime           @default(now())
+
+  car               car                @relation(fields: [carId], references: [id])
+}
+
+model booking {
+  id                Int                @id                @default(autoincrement())
+  clientId          Int
+  carId             Int
+  startDate         DateTime
+  endDate           DateTime
+  daysBooked        Int?
+  withDriver        Boolean
+  totalPrice        Float?
+  status            BookingStatus      @default(pending)
+  note              String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  client            client             @relation(fields: [clientId], references: [id])
+  car               car                @relation(fields: [carId], references: [id])
+}
+
+model rating {
+  id                Int                @id                @default(autoincrement())
+  carId             Int
+  clientId          Int
+  stars             Int
+  title             String?
+  comment           String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  car               car                @relation(fields: [carId], references: [id])
+  client            client             @relation(fields: [clientId], references: [id])
+}
+
+enum BookingStatus {
+  pending
+  confirmed
+  paid
+  completed
+  cancelled
 }

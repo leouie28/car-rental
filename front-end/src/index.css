@@ -3,3 +3,13 @@
   themes: light --default
 }
 
+@plugin "daisyui/theme" {
+  name: 'light';
+  default: true;
+  prefersdark: false;
+  color-scheme: 'light';
+  --color-primary: '#c59d3e';
+  --color-primary-content: '#ffffff';
+  /* --radius-box: 0.4rem;
+  --radius-field: 0.4rem; */
+}

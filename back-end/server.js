@@ -1,17 +1,17 @@
-const app = require('./app');
-const http = require('http');
-const { Server } = require('socket.io');
-const cors = require("cors")
+import app from './app.js';
+import http from 'http';
+import { Server } from 'socket.io';
+// const cors = require("cors")
 
-app.use(cors())
+// app.use(cors())
 
 const server = http.createServer(app)
 
 const io = new Server(server, {
-    cors: {
-        origin: '*',
-        methods: ['GET', 'POST']
-    }
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
 })
 
 io.on('connection', (socket) => {
