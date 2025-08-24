@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
-import { Car, ChartColumnStacked, ChartPie, Clock, MapPinned, Menu } from 'lucide-react';
+import { Car, ChartColumnStacked, ChartPie, Clock, MapPinned, Menu, MessageSquareMore } from 'lucide-react';
 import { useSession } from '../context/SessionContext';
 
 const navs = [
   {
-    name: "Dashboard",
-    path: "/admin/dashboard",
+    name: "Reports",
+    path: "/admin/reports",
     icon: <ChartColumnStacked />
   },
   {
@@ -20,14 +20,14 @@ const navs = [
     icon: <Car />
   },
   {
+    name: "Messages",
+    path: "/admin/messages",
+    icon: <MessageSquareMore />
+  },
+  {
     name: "Track",
     path: "/admin/track",
     icon: <MapPinned />
-  },
-  {
-    name: "Reports",
-    path: "/admin/reports",
-    icon: <ChartPie />
   },
 ]
 
@@ -47,7 +47,7 @@ export default function AdminLayout() {
   
   return (
     <div className='relative h-full'>
-      <div className='fixed left-0 top-0 w-72 h-full bg-black z-10 p-6'>
+      <div className='fixed -left-72 lg:left-0 top-0 w-72 h-full bg-black z-10 p-6'>
         <button className='btn btn-ghost'>
           <Menu color='white' />
         </button>
@@ -65,7 +65,7 @@ export default function AdminLayout() {
           ))}
         </ul>
       </div>
-      <div className='ml-72 relative bg-base-300 h-full'>
+      <div className='ml-0 lg:ml-72 relative bg-base-300 h-full'>
         <Outlet />
       </div>
     </div>

@@ -1,14 +1,29 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import hero from "../../assets/hero.jpg";
 import Container from "../../components/Container";
 import {
   Calendar,
+  FileQuestionMark,
   Fuel,
+  Search,
+  SendHorizonal,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { getCars } from "../../rest/car";
+import { getCarBrands, getCars } from "../../rest/car";
+import { useSession } from "../../context/SessionContext";
+import { useNavigate } from "react-router-dom";
+import CarDetails from "../../components/CarDetails";
 
 export default function index() {
+  const { user } = useSession()
+  const navigate = useNavigate()
+  const [selectedCar, setSelectedCar] = useState(null);
+  const [filters, setFilters] = useState({
+    make: "",
+    dateStart: "",
+    dateReturn: ""
+  })
+
   const { data, isLoading } = useQuery({
     queryKey: ["client-cars"],
     queryFn: () => getCars({
@@ -18,8 +33,33 @@ export default function index() {
     refetchOnWindowFocus: false,
   });
 
+  const { data: brands } = useQuery({
+    queryKey: ["client-car-brands"],
+    queryFn: getCarBrands,
+    refetchOnWindowFocus: false,
+  });
+
+  const handleChat = (car) => {
+    if (user && !user?.isAdmin) {
+      setSelectedCar(car)
+    }else {
+      const dialog = document.getElementById("login_signin_dialog")
+      dialog?.showModal()
+    }
+  }
+
+  const handleBook = (car) => {
+    if (user && !user?.isAdmin) {
+      return navigate(`/booking/create?carId=${car?.id}`)
+    }else {
+      const dialog = document.getElementById("login_signin_dialog")
+      dialog?.showModal()
+    }
+  }
+
   return (
     <div className="bg-base-100 pb-10 pt-4">
+      <CarDetails user={user} car={selectedCar} setCar={() => setSelectedCar(null)} />
       <Container>
         <div
           className="aspect-[16/5] w-full rounded-2xl text-white p-10 space-y-4"
@@ -36,46 +76,53 @@ export default function index() {
             Service Request With Professional Driver
           </p>
         </div>
-        <div className="card bg-base-100 w-11/12 mx-auto rounded-2xl shadow -mt-18">
+        <div className="card bg-base-100 w-[94%] mx-auto rounded-2xl shadow -mt-18">
           <div className="card-body">
-            <div className="space-x-2">
-              <input
-                className="btn btn-sm rounded-full"
-                type="radio"
-                name="type"
-                aria-label="Self Drive"
-              />
-              <input
-                className="btn btn-sm rounded-full"
-                type="radio"
-                name="type"
-                aria-label="Pick-Up"
-              />
-            </div>
-            <div className="flex items-end gap-4">
+            <h2 className="text-2xl font-semibold text-base-content/80">Find the car you need</h2>
+            <form 
+              className="flex items-end gap-4"
+              onSubmit={(e) => {
+                e.preventDefault()
+              }}
+            >
               <fieldset className="fieldset flex-1">
-                <legend className="fieldset-legend">What is your name?</legend>
+                <legend className="fieldset-legend">Brand</legend>
+                <select 
+                  className="select w-full"
+                  value={filters.make}
+                  onChange={(e) => setFilters(prev => ({ ...prev, make: e.target.value }))}
+                  required={!filters.dateStart && !filters.dateReturn}
+                >
+                  <option value="">All Brands</option>
+                  {brands?.map((b, i) => (
+                    <option key={i} value={b} className="capitalize">{b}</option>
+                  ))}
+                </select>
+              </fieldset>
+              <fieldset className="fieldset flex-1">
+                <legend className="fieldset-legend">Date Start</legend>
                 <input
-                  type="text"
-                  className="input w-full rounded-2xl"
+                  type="date"
+                  className="input w-full"
                   placeholder="Type here"
                 />
               </fieldset>
               <fieldset className="fieldset flex-1">
-                <legend className="fieldset-legend">What is your name?</legend>
+                <legend className="fieldset-legend">Date Return</legend>
                 <input
-                  type="text"
-                  className="input w-full rounded-2xl"
+                  type="date"
+                  className="input w-full"
                   placeholder="Type here"
                 />
               </fieldset>
               <fieldset className="fieldset">
                 <legend className="fieldset-legend"></legend>
-                <button className="btn btn-primary rounded-2xl">
+                <button type="submit" className="btn btn-primary">
                   Search available
+                  <Search size={18} />
                 </button>
               </fieldset>
-            </div>
+            </form>
           </div>
         </div>
         <div className="my-10">
@@ -83,17 +130,24 @@ export default function index() {
           <div className="grid grid-cols-3 gap-10 mt-4">
             {data?.rows?.map((d, i) => (
               <div key={d?.id || i} className="group cursor-pointer card border border-base-300 hover:shadow">
-                <figure className="aspect-video w-full">
-                  <img
-                    src="/car2.png"
-                    alt="Car image"
-                  />
-                </figure>
+                {d.images.length ? (
+                  <figure className="aspect-video w-full">
+                    <img
+                      className="group-hover:scale-102 transition-transform w-full h-full object-cover object-center"
+                      src={d.images[0].base64}
+                      alt="Car image"
+                    />
+                  </figure>
+                ) : (
+                  <div className="aspect-video w-full flex items-center justify-center bg-base-200">
+                    <FileQuestionMark className="group-hover:scale-102 transition-transform text-base-content/60" size={42} />
+                  </div>
+                ) }
                 <div className="card-body">
                   <h2 className="card-title group-hover:underline">
                     {d?.make} - {d?.model} {d?.year} ({d?.color})
                   </h2>
-                  <h3 className="text-primary text-lg">Php {d?.dailyPrice}/day</h3>
+                  <h3 className="text-primary text-lg">₱{d?.dailyPrice.toLocaleString('en-US')}/day</h3>
                   <div className="flex justify-between my-3 text-base-content/70">
                     <div className="flex gap-2 items-center">
                       <svg
@@ -130,7 +184,7 @@ export default function index() {
                           d="M82.64 48.26a51.94 51.94 0 0 0-51.68 51.94a51.94 51.94 0 0 0 42.2 50.9v209.7a51.94 51.94 0 0 0-42.2 51a51.94 51.94 0 0 0 51.94 51.9a51.94 51.94 0 0 0 51.9-51.9a51.94 51.94 0 0 0-42.15-51v-95.1H246.2v95.1a51.94 51.94 0 0 0-42.2 51a51.94 51.94 0 0 0 52 51.9a51.94 51.94 0 0 0 51.9-51.9a51.94 51.94 0 0 0-42.2-51v-95.1h173.1V151.1a51.94 51.94 0 0 0 42.2-50.9a51.94 51.94 0 0 0-51.9-51.94h-.2a51.94 51.94 0 0 0-51.7 51.94a51.94 51.94 0 0 0 42.2 50.9v95.1H265.7v-95.1a51.94 51.94 0 0 0 42.2-50.9A51.94 51.94 0 0 0 256 48.26h-.2A51.94 51.94 0 0 0 204 100.2a51.94 51.94 0 0 0 42.2 50.9v95.1H92.65v-95.1a51.94 51.94 0 0 0 42.15-50.9a51.94 51.94 0 0 0-51.9-51.94z"
                         ></path>
                       </svg>
-                      <span className="capitalize">{d?.transmission}</span>
+                      <span className="capitalize">{d?.transmission.replace("_", "-")}</span>
                     </div>
                     <div className="flex gap-2 items-center">
                       <svg
@@ -153,8 +207,8 @@ export default function index() {
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <button className="btn btn-block">Chat</button>
-                    <button className="btn btn-primary btn-block">Book</button>
+                    <button onClick={() => handleChat(d)} className="btn btn-block">Inquire</button>
+                    <button onClick={() => handleBook(d)} className="btn btn-primary btn-block">Book Now</button>
                   </div>
                 </div>
               </div>

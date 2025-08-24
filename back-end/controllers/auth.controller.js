@@ -7,13 +7,20 @@ const JWT_SECRET = process.env.JWT_SECRET || "secret_key"
 export const loginAdmin = async (req, res) => {
     const { username, password } = req.body
     try {
-        const adminUser = process.env.ADMIN_USERNAME
-        const adminPass = process.env.ADMIN_PASSWORD
-        if (username === adminUser && password === adminPass) {
-            const token = jwt.sign({ isAdmin: true }, JWT_SECRET, {
-                expiresIn: '7d',
-            })
-            res.status(200).json({ token })
+        const admin = await prisma.user.findFirst({
+            where: { email: username }
+        })
+
+        if (admin) {
+            const matchedPassword = bcrypt.compareSync(password, admin.password)
+
+            if (matchedPassword) {
+                const { password, ...adminData } = admin
+                const token = jwt.sign(adminData, JWT_SECRET, {
+                    expiresIn: '7d',
+                })
+                res.status(200).json({ token })
+            }
         }
         res.status(401).json({ message: "Invalid credentials" })
     } catch (error) {
@@ -25,14 +32,23 @@ export const loginAdmin = async (req, res) => {
 export const registerClient = async (req, res) => {
     const paylaod = req.body
     try {
-        await prisma.client.create({
+        const client = await prisma.user.create({
             data: {
                 ...paylaod,
                 password: bcrypt.hashSync(paylaod.password, 10)
             }
         })
 
-        res.status(200).json({ success: true })
+        if (client) {
+            const { password, ...clientData } = client
+            const token = jwt.sign(clientData, JWT_SECRET, {
+                expiresIn: '7d',
+            })
+
+            res.status(200).json({ success: true, token })
+        }
+
+        res.status(403).json({ message: "Register failed" })
     } catch (error) {
         console.log('Error on registerClient:', error);
         res.status(500).send('Server Error');
@@ -42,7 +58,7 @@ export const registerClient = async (req, res) => {
 export const loginClient = async (req, res) => {
     const { email, password } = req.body
     try {
-        const client = await prisma.client.findFirst({
+        const client = await prisma.user.findFirst({
             where: { email: email }
         })
 

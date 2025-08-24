@@ -68,6 +68,12 @@ export const getCars = async (req, res) => {
         const rows = await prisma.car.findMany({
             where: {
                 ...whereInput
+            },
+            include: {
+                images: true
+            },
+            orderBy: {
+                id: "desc"
             }
         })
 
@@ -84,9 +90,20 @@ export const getCars = async (req, res) => {
 export const addCar = async (req, res) => {
     const { images, ...payload } = req.body
     try {
-        await prisma.car.create({
+        const car = await prisma.car.create({
             data: payload
         })
+
+        if (images.length) {
+            await Promise.all(images.map(async (img) => {
+                await prisma.car.update({
+                    where: { id: img.id },
+                    data: {
+                        carId: car.id,
+                    }
+                })
+            }))
+        }
 
         res.status(200).json({ success: true })
     } catch (error) {

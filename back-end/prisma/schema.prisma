@@ -14,20 +14,34 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model client {
+model user {
   id                Int                @id                @default(autoincrement())
   firstName         String?
-  lastName         String?
+  lastName          String?
   phone             String?
   email             String             @unique
   password          String
   birthDate         String?
   address           String?
+  isAdmin           Boolean            @default(false)
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
   booking           booking[]
-  rating            rating[]
+  feedback          feedback[]
+  license           license[]
+  messageSend       message[]          @relation("SentMessages")
+  messageReceive    message[]          @relation("ReceivedMessages")
+}
+
+model license {
+  id                Int                @id                @default(autoincrement())
+  userId            Int
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  user              user             @relation(fields: [userId], references: [id])
+  images            image[]
 }
 
 model car {
@@ -42,62 +56,84 @@ model car {
   doorCount         Int?
   otherDetails      String?
   features          String?
-
+  securityDeposit   Float?
   dailyPrice        Float
   withDriverDailyPrice  Float?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
   booking           booking[]
-  rating            rating[]
   images            image[]
 }
 
 model image {
   id                Int                @id                @default(autoincrement())
-  carId             Int
-  url               String
-  externalId        String?
+  carId             Int?               @unique
+  licenseId         Int?
+  base64            String
+  type              String?
   createdAt         DateTime           @default(now())
 
-  car               car                @relation(fields: [carId], references: [id])
+  car               car?               @relation(fields: [carId], references: [id])
+  license           license?           @relation(fields: [licenseId], references: [id])
 }
 
 model booking {
   id                Int                @id                @default(autoincrement())
-  clientId          Int
+  userId            Int
   carId             Int
-  startDate         DateTime
-  endDate           DateTime
+  dateStart         DateTime
+  dateReturn        DateTime
+  pickupLocation    String?
+  destination       String?
   daysBooked        Int?
   withDriver        Boolean
   totalPrice        Float?
   status            BookingStatus      @default(pending)
   note              String?
+  paymentOption     PaymentType
+  cancelRemarks     String?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
-  client            client             @relation(fields: [clientId], references: [id])
+  user              user             @relation(fields: [userId], references: [id])
   car               car                @relation(fields: [carId], references: [id])
 }
 
-model rating {
+enum PaymentType {
+  cash
+  online
+}
+
+model feedback {
   id                Int                @id                @default(autoincrement())
-  carId             Int
-  clientId          Int
+  userId            Int
   stars             Int
   title             String?
   comment           String?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
-  car               car                @relation(fields: [carId], references: [id])
-  client            client             @relation(fields: [clientId], references: [id])
+  user              user               @relation(fields: [userId], references: [id])
+}
+
+model message {
+  id                Int                @id                @default(autoincrement())
+  from              Int
+  to                Int
+  message           String
+  attachment        Json?
+  readAt            DateTime?
+  createdAt         DateTime           @default(now())
+
+  sender            user             @relation("SentMessages", fields: [from], references: [id])
+  receiver          user             @relation("ReceivedMessages", fields: [to], references: [id])
 }
 
 enum BookingStatus {
   pending
   confirmed
+  partially_paid
   paid
   completed
   cancelled

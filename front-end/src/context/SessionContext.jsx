@@ -31,6 +31,9 @@ export function SessionProvider({ children }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("token");
+    setTimeout(() => {
+      window.location.href = "/";
+    }, 200)
   };
 
   return (

@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import Container from '../../../components/Container'
 import { ImageUp } from 'lucide-react'
 import { useMutation } from '@tanstack/react-query'
 import { addCar } from '../../../rest/admin/car'
 import { useNavigate } from 'react-router-dom'
+import api from '../../../lib/api'
 
 const emptyForm = {
   make: "",
@@ -16,13 +17,17 @@ const emptyForm = {
   doorCount: null,
   otherDetails: "",
   features: "",
-  dailyPrice: 0,
-  withDriverDailyPrice: 0
+  securityDeposit: '',
+  dailyPrice: '',
+  withDriverDailyPrice: '',
+  images: []
 }
 
 export default function AdminCarForm() {
   const navigate = useNavigate()
   const [form, setForm] = useState(emptyForm)
+  const imgInputRef = useRef(null)
+  const [imgLoading, setImgLoading] = useState(false)
 
   const { mutate, isPending } = useMutation({
     mutationFn: addCar,
@@ -31,6 +36,41 @@ export default function AdminCarForm() {
       navigate("/admin/cars")
     }
   })
+
+  const handleImageChange = async (e) => {
+    const files = e.target.files;
+    if (files) {
+      setImgLoading(true);
+
+      const uploadedImages = await Promise.all(
+        Array.from(files).map(
+          (file) =>
+            new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.readAsDataURL(file);
+              reader.onloadend = async () => {
+                try {
+                  const base64 = reader.result;
+                  const res = await api.post("/upload-image", { base64 });
+                  resolve(res.data); // return uploaded image data
+                } catch (err) {
+                  reject(err);
+                }
+              };
+              reader.onerror = reject;
+            })
+        )
+      );
+
+      // Update state once with all new images
+      setForm((prev) => ({
+        ...prev,
+        images: [...prev.images, ...uploadedImages],
+      }));
+
+      setImgLoading(false);
+    }
+  };
 
   return (
     <div className='py-10'>
@@ -42,7 +82,12 @@ export default function AdminCarForm() {
               <form 
                 onSubmit={(e) => {
                   e.preventDefault()
-                  mutate(form)
+                  mutate({
+                    ...form,
+                    securityDeposit: form.securityDeposit ? Number(form.securityDeposit) : null,
+                    dailyPrice: Number(form.dailyPrice),
+                    withDriverDailyPrice: Number(form.withDriverDailyPrice)
+                  })
                 }} 
                 className=''
               >
@@ -53,6 +98,7 @@ export default function AdminCarForm() {
                     <input 
                       type="text" 
                       className="input w-full" 
+                      name="make"
                       required
                       value={form.make}
                       onChange={(e) => setForm(prev => ({ ...prev, make: e.target.value }))}
@@ -154,34 +200,71 @@ export default function AdminCarForm() {
                     ></textarea>
                   </fieldset>
                 </div>
-                <h2 className='card-title mt-4'>Daily Pricing</h2>
+                <h2 className='card-title mt-4'>Pricing</h2>
                 <div className='grid grid-cols-3 gap-3'>
                   <fieldset className="fieldset">
+                    <legend className="fieldset-legend">Security Deposit</legend>
+                    <label className='input w-full'>
+                      <span>₱</span>
+                      <input 
+                        type="number" 
+                        className="grow" 
+                        value={form.securityDeposit}
+                        onChange={(e) => setForm(prev => ({ ...prev, securityDeposit: e.target.value }))}
+                      />
+                    </label>
+                  </fieldset>
+                  <fieldset className="fieldset">
                     <legend className="fieldset-legend">Self Drive</legend>
-                    <input 
-                      type="number" 
-                      className="input w-full" 
-                      required
-                      value={form.dailyPrice}
-                      onChange={(e) => setForm(prev => ({ ...prev, dailyPrice: e.target.value === '' ? 0 : Number(e.target.value) }))}
-                    />
+                    <label className='input w-full'>
+                      <span>₱</span>
+                      <input 
+                        type="number" 
+                        className="grow" 
+                        required
+                        value={form.dailyPrice}
+                        onChange={(e) => setForm(prev => ({ ...prev, dailyPrice: e.target.value }))}
+                      />
+                    </label>
                   </fieldset>
                   <fieldset className="fieldset">
                     <legend className="fieldset-legend">With Driver</legend>
-                    <input 
-                      type="number" 
-                      className="input w-full" 
-                      required
-                      value={form.withDriverDailyPrice}
-                      onChange={(e) => setForm(prev => ({ ...prev, withDriverDailyPrice: e.target.value === '' ? 0 : Number(e.target.value) }))}
-                    />
+                    <label className='input w-full'>
+                      <span>₱</span>
+                      <input 
+                        type="number" 
+                        className="grow" 
+                        required
+                        value={form.withDriverDailyPrice}
+                        onChange={(e) => setForm(prev => ({ ...prev, withDriverDailyPrice: e.target.value }))}
+                      />
+                    </label>
                   </fieldset>
                 </div>
                 <h2 className='card-title mt-4'>Images</h2>
-                <div className='flex flex-wrap gap-3 my-2'>
-                  <div className='bg-base-200 text-base-content/60 hover:text-base-content/90 hover:underline active:scale-101 border border-base-content/20 border-dashed aspect-[3/2] w-32 rounded-lg flex flex-col justify-center items-center cursor-pointer'>
-                    <ImageUp size={18} />
-                    Upload
+                <input 
+                  type="file"
+                  ref={imgInputRef} 
+                  className='hidden'
+                  accept='image/*'
+                  multiple
+                  onChange={handleImageChange}
+                />
+                <div className='grid grid-cols-4 gap-4 my-2'>
+                  {form.images.map((img, i) => (
+                    <img 
+                      key={i} 
+                      className='w-full aspect-[3/2] rounded-lg object-cover object-center'
+                      src={img?.base64}
+                      alt="Car image"
+                    />
+                  ))}
+                  <div 
+                    className='bg-base-200 text-base-content/60 hover:text-base-content/90 hover:underline active:scale-101 border border-base-content/20 border-dashed aspect-[3/2] w-full rounded-lg flex flex-col gap-2 justify-center items-center cursor-pointer'
+                    onClick={() => imgInputRef?.current?.click()}
+                  >
+                    <ImageUp size={24} />
+                    Add Images
                   </div>
                 </div>
                 <div className='flex justify-end gap-2'>
@@ -195,7 +278,7 @@ export default function AdminCarForm() {
                   <button 
                     type="submit" 
                     className='btn btn-primary'
-                    disabled={isPending}
+                    disabled={isPending||imgLoading}
                   >
                     {isPending ? 'Processing...' : 'Add Car'}
                   </button>

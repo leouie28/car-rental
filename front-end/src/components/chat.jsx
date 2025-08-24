@@ -1,9 +1,6 @@
 import { SendHorizonal } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
-import { io } from 'socket.io-client';
-
-// const socket = io('http://localhost:4000'); // Update if deployed
-const socket = io('http://192.168.0.100:4001'); // Update if deployed
+import socket from '../socket';
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);

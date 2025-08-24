@@ -79,12 +79,12 @@ export default function AdminCarsPage() {
                         <td>{d?.model}</td>
                         <td>{d?.year}</td>
                         <td>{d?.color}</td> */}
-                        <td>{d?.transmission}</td>
-                        <td>{d?.fuelType}</td>
+                        <td className="capitalize">{d?.transmission.replace("_", "-")}</td>
+                        <td className="capitalize">{d?.fuelType}</td>
                         <td>{d?.seatCount}</td>
                         <td>{d?.doorCount}</td>
-                        <td>{d?.dailyPrice}</td>
-                        <td>{d?.withDriverDailyPrice}</td>
+                        <td>₱{d?.dailyPrice.toLocaleString('en-US')}</td>
+                        <td>₱{d?.withDriverDailyPrice.toLocaleString('en-US')}</td>
                         <td>
                           <button className="btn btn-ghost btn-sm">
                             <Eye size={14} />
