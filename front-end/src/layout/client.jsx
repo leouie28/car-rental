@@ -2,15 +2,34 @@ import React, { useEffect } from 'react'
 import { Outlet, Link } from "react-router-dom";
 import Container from '../components/Container';
 import logo from './../assets/icon.png'
-import { Bell, ChevronDown, LogOut, MessageSquareMore, User } from 'lucide-react';
+import { Bell, ChevronDown, Clock, LogOut, MessageSquareMore, User } from 'lucide-react';
 import LoginSignInDialog from '../components/LoginSignInDialog';
 import { useSession } from '../context/SessionContext';
 import ClientMessage from '../components/ClientMessage';
 import { useState } from 'react';
+import socket from '../socket';
 
 export default function ClientLayout() {
   const { user, logout } = useSession()
+  const userId = user?.id
   const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    if (!userId) return
+    socket.emit("join", userId)
+
+    const interval = setInterval(() => {
+      navigator.geolocation.getCurrentPosition((pos) => {
+        socket.emit("driver_location", {
+          driverId: userId,
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        });
+      });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [userId])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,6 +55,7 @@ export default function ClientLayout() {
               {user && !user?.isAdmin ? (
                 <>
                   <button className='flex items-center gap-2 cursor-pointer hover:text-primary hover:opacity-70'>
+                    <Clock size={20} />
                     Booking
                     {/* <span className='indicator'>
                       <span className="indicator-item badge badge-error badge-xs">12</span>
@@ -44,6 +64,7 @@ export default function ClientLayout() {
                   </button>
                   <div className="dropdown dropdown-end">
                     <div tabIndex={0} role="button" className="flex items-center gap-2 cursor-pointer focus:text-primary hover:text-primary hover:opacity-70">
+                      <User size={20} />
                       {user?.firstName} {user?.lastName}
                       <ChevronDown size={16} />
                     </div>

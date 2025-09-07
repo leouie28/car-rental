@@ -39,37 +39,37 @@ export default function AdminCarForm() {
 
   const handleImageChange = async (e) => {
     const files = e.target.files;
-    if (files) {
-      setImgLoading(true);
+    if (!files.length) return
+    
+    setImgLoading(true);
 
-      const uploadedImages = await Promise.all(
-        Array.from(files).map(
-          (file) =>
-            new Promise((resolve, reject) => {
-              const reader = new FileReader();
-              reader.readAsDataURL(file);
-              reader.onloadend = async () => {
-                try {
-                  const base64 = reader.result;
-                  const res = await api.post("/upload-image", { base64 });
-                  resolve(res.data); // return uploaded image data
-                } catch (err) {
-                  reject(err);
-                }
-              };
-              reader.onerror = reject;
-            })
-        )
-      );
+    const uploadedImages = await Promise.all(
+      Array.from(files).map(
+        (file) =>
+          new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onloadend = async () => {
+              try {
+                const base64 = reader.result;
+                const res = await api.post("/upload-image", { base64 });
+                resolve(res.data); // return uploaded image data
+              } catch (err) {
+                reject(err);
+              }
+            };
+            reader.onerror = reject;
+          })
+      )
+    );
 
-      // Update state once with all new images
-      setForm((prev) => ({
-        ...prev,
-        images: [...prev.images, ...uploadedImages],
-      }));
+    // Update state once with all new images
+    setForm((prev) => ({
+      ...prev,
+      images: [...prev.images, ...uploadedImages],
+    }));
 
-      setImgLoading(false);
-    }
+    setImgLoading(false);
   };
 
   return (

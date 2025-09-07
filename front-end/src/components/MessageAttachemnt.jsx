@@ -4,6 +4,7 @@ import { carDetails } from '../rest/car'
 import { FileQuestionMark } from 'lucide-react'
 import { bookingDetails } from '../rest/booking'
 import dayjs from 'dayjs'
+import api from '../lib/api'
 
 export default function MessageAttachemnt({ attachment }) {
   const { data: car } = useQuery({
@@ -17,7 +18,13 @@ export default function MessageAttachemnt({ attachment }) {
     queryFn: () => bookingDetails(attachment?.bookingId),
     enabled: !!attachment?.bookingId
   })
-  
+
+  const { data: images } = useQuery({
+    queryKey: ['images', attachment?.imageIds],
+    queryFn: async () => (await api.get('/message/attachment', { params: { imageIds: attachment?.imageIds.join(",") } })).data,
+    enabled: !!attachment?.imageIds
+  })
+
   if (attachment?.carId) {
     if (!car) return <></>
     return (
@@ -82,6 +89,19 @@ export default function MessageAttachemnt({ attachment }) {
     )
   }
 
+  if (attachment?.imageIds) {
+    if (!images) return <></>
+    return (
+      <div className='my-2 rounded-lg overflow-hidden'>
+        {images?.map((d, i) => (
+          <img  
+            key={i}
+            src={d?.base64}
+          />
+        ))}
+      </div>
+    )
+  }
 
   return (
     <div>MessageAttachemnt</div>

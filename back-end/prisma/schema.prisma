@@ -32,6 +32,7 @@ model user {
   license           license[]
   messageSend       message[]          @relation("SentMessages")
   messageReceive    message[]          @relation("ReceivedMessages")
+  location          location[]
 }
 
 model license {
@@ -119,15 +120,15 @@ model feedback {
 
 model message {
   id                Int                @id                @default(autoincrement())
-  from              Int
-  to                Int
+  from              Int?
+  to                Int?
   message           String
   attachment        Json?
   readAt            DateTime?
   createdAt         DateTime           @default(now())
 
-  sender            user             @relation("SentMessages", fields: [from], references: [id])
-  receiver          user             @relation("ReceivedMessages", fields: [to], references: [id])
+  sender            user?              @relation("SentMessages", fields: [from], references: [id])
+  receiver          user?              @relation("ReceivedMessages", fields: [to], references: [id])
 }
 
 enum BookingStatus {
@@ -137,4 +138,15 @@ enum BookingStatus {
   paid
   completed
   cancelled
+}
+
+model location {
+  id                Int                @id                @default(autoincrement())
+  lng               Decimal
+  lat               Decimal
+  userId            Int
+  createdAt         DateTime           @default(now())
+  updatedat         DateTime?          @updatedAt
+
+  user              user               @relation(fields: [userId], references: [id])
 }

@@ -88,67 +88,103 @@ export const updateBookingStatus = async (req, res) => {
             data: { status },
         })
 
-        const message = "Admin accept different booking similar with this date schedule. Please create new booking."
-        const similarBookings = await prisma.booking.findMany({
-            // data: {
-            //     status: "cancelled",
-            //     cancelRemarks: message
-            // },
-            where: {
-                id: {
-                    not: booking.id
-                },
-                carId: booking.carId,
-                status: {
-                    not: 'cancelled'
-                },
-                AND: [
-                    {
-                        dateStart: {
-                            lte: dayjs(booking.dateReturn).endOf('day').toDate()
-                        }
+        if (status === "confirmed" || status === "partially_paid" || status === "paid") {
+            const message = "Admin accept different booking similar with this date schedule. Please create new booking."
+            const similarBookings = await prisma.booking.findMany({
+                where: {
+                    id: {
+                        not: booking.id
                     },
-                    {
-                        dateReturn: {
-                            gte: dayjs(booking.dateStart).startOf('day').toDate()
-                        }
-                    }
-                ]
-            }
-        })
-
-        if (similarBookings.length > 0) {
-            await Promise.all(similarBookings.map(async (b) => {
-                const cancelled = await prisma.booking.update({
-                    where: { id: b.id },
-                    data: {
-                        status: "cancelled",
-                        cancelRemarks: message
+                    carId: booking.carId,
+                    status: {
+                        not: 'cancelled'
                     },
-                })
-
-                const saveSmg = await prisma.message.create({
-                    data: {
-                        from: 1,
-                        to: cancelled.userId,
-                        message: message,
-                        attachment: {
-                            bookingId: cancelled.id,
+                    AND: [
+                        {
+                            dateStart: {
+                                lte: dayjs(booking.dateReturn).endOf('day').toDate()
+                            }
                         },
-                        createdAt: new Date()
-                    }
-                })
-        
-                const socketId = onlineUsers[cancelled.userId]
-                if (socketId) {
-                    io.to(socketId).emit("receive_message", saveSmg)
+                        {
+                            dateReturn: {
+                                gte: dayjs(booking.dateStart).startOf('day').toDate()
+                            }
+                        }
+                    ]
                 }
-            }))
+            })
+    
+            if (similarBookings.length > 0) {
+                await Promise.all(similarBookings.map(async (b) => {
+                    const cancelled = await prisma.booking.update({
+                        where: { id: b.id },
+                        data: {
+                            status: "cancelled",
+                            cancelRemarks: message
+                        },
+                    })
+    
+                    const saveSmg = await prisma.message.create({
+                        data: {
+                            from: null,
+                            to: cancelled.userId,
+                            message: message,
+                            attachment: {
+                                bookingId: cancelled.id,
+                            },
+                            createdAt: new Date()
+                        }
+                    })
+            
+                    const socketId = onlineUsers[cancelled.userId]
+                    if (socketId) {
+                        io.to(socketId).emit("receive_message", saveSmg)
+                    }
+                }))
+            }
         }
+
 
         res.status(200).json({ success: true })
     } catch (error) {
         console.log('Error on updateBookingStatus:', error);
+        res.status(500).send('Server Error');
+    }
+}
+
+export const activeBookingToday = async (req, res) => {
+    try {
+        const bookings = await prisma.booking.findMany({
+            where: {
+                dateStart: {
+                    gte: dayjs().startOf("day").toISOString()
+                },
+                dateReturn: {
+                    not: {
+                        lte: dayjs().endOf("day").toISOString()
+                    }
+                },
+                status: {
+                    notIn: ["cancelled", "pending", "completed"],
+                },
+            },
+            include: {
+                user: {
+                    include: {
+                        location: {
+                            take: 1,
+                            orderBy: {
+                                createdAt: "desc"
+                            }
+                        }
+                    }
+                },
+                car: true
+            }
+        })
+        res.status(200).json(bookings)
+    } catch (error) {
+        console.log('Error on activeBookingToday:', error);
         res.status(500).send('Server Error');
     }
 }

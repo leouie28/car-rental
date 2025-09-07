@@ -10,7 +10,6 @@ const MessageContext = createContext()
 
 export function AdminMessageProvider({ children }) {
   const { id: clientId } = useParams()
-  const adminId = 1
   const [msgList, setMsgList] = useState([])
   const [conversation, setConversation] = useState([])
   const audioRef = useRef(new Audio(notificationSound));
@@ -40,7 +39,7 @@ export function AdminMessageProvider({ children }) {
   }
 
   useEffect(() => {
-    socket.emit("join", adminId)
+    socket.emit("join", "admin")
 
     socket.on("receive_message", (msg) => {
       if (conversation.length) {

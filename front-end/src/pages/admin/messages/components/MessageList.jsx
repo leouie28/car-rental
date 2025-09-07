@@ -7,6 +7,7 @@ import dayjs from 'dayjs'
 export default function MessageList({ activeId }) {
   const { msgList } = useMessage()
   const navigate = useNavigate()
+  const adminId = import.meta.env.VITE_ADMIN_ID || 1
 
   return (
     <div className="mt-2 space-y-2">
@@ -24,7 +25,7 @@ export default function MessageList({ activeId }) {
           <div>
             <h3 className="font-medium">{d?.firstName} {d?.lastName}</h3>
             <p className="text-sm line-clamp-1">
-              {d?.latest?.from == 1 ? `You: ${d?.latest?.message}` : d?.latest?.message}
+              {d?.latest?.from == adminId ? `You: ${d?.latest?.message}` : d?.latest?.attachment ? "Attachment" : d?.latest?.message}
             </p>
           </div>
         </div>

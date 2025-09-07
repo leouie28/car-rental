@@ -1,4 +1,4 @@
-import { MessageSquareMore, SendHorizonal, X } from 'lucide-react'
+import { Image, MessageSquareMore, SendHorizonal, X } from 'lucide-react'
 import React, { useState, useEffect, useRef } from 'react'
 import socket from '../socket'
 import { useSession } from '../context/SessionContext'
@@ -7,19 +7,22 @@ import { getMessages } from '../rest/message'
 import dayjs from 'dayjs'
 import notificationSound from '../assets/bling.mp3'
 import MessageAttachemnt from './MessageAttachemnt'
+import api from '../lib/api'
 
 export default function ClientMessage() {
   const { user } = useSession()
   const userId = user?.id
-  const adminId = 1
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState([])
   const [msgInput, setMsgInput] = useState('');
   const messagesEndRef = useRef(null);
   const audioRef = useRef(new Audio(notificationSound));
+  const fileInputRef = useRef(null)
+  const [files, setFiles] = useState([])
+  const [imgLoading, setImgLoading] = useState(false)
 
   useEffect(() => {
-    socket.emit("join", userId)
+    // socket.emit("join", userId)
 
     socket.on('receive_message', (msg) => {
       setMessages((prev) => [msg, ...prev]);
@@ -47,17 +50,51 @@ export default function ClientMessage() {
   // }, [messages, open]);
 
   const sendMessage = () => {
-    if (!msgInput) return
-    const msgData = {
+    if (!msgInput && !files.length) return
+    let msgData = {
       from: userId,
-      to: adminId,
+      to: "admin",
       message: msgInput,
-      createdAt: new Date
+      createdAt: new Date,
+      attachment: null
     }
+    files.length ? msgData.attachment = { imageIds: files.map((d) => d?.id) } : null
     socket.emit("send_message", msgData)
     setMessages((prev) => [msgData, ...prev])
     setMsgInput("")
+    setFiles([])
   }
+
+  const handleImageChange = async (e) => {
+    const filesData = e.target.files;
+    if (!filesData.length) return
+    setImgLoading(true);
+
+    const uploadedImages = await Promise.all(
+      Array.from(filesData).map(
+        (file) =>
+          new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onloadend = async () => {
+              try {
+                const base64 = reader.result;
+                const res = await api.post("/upload-image", { base64 });
+                resolve(res.data); // return uploaded image data
+              } catch (err) {
+                reject(err);
+              }
+            };
+            reader.onerror = reject;
+          })
+      )
+    );
+
+    // Update state once with all new images
+    setFiles((prev) => prev.length ? [...prev, uploadedImages] : [...uploadedImages])
+
+    setImgLoading(false);
+  };
 
   if (open) {
     return (
@@ -71,7 +108,7 @@ export default function ClientMessage() {
         <div className='flex-1 pb-4 flex flex-col-reverse gap-2 justify-start overflow-y-auto'>
           {messages.map((d, i) => (
             <React.Fragment key={`${d?.id}-${i}`}>
-              {d?.from === adminId ? (
+              {!d?.from ? (
                 <div className="chat chat-start">
                   <div className="chat-header">
                     {d?.attachment ? 'Send by System' : 'Admin'}
@@ -98,7 +135,19 @@ export default function ClientMessage() {
           ))}
           <div ref={messagesEndRef} />
         </div>
-        <div className='flex flex-col items-end bg-base-100 border border-base-content/20 rounded-xl overflow-hidden'>
+        <div className='flex flex-col bg-base-100 border border-base-content/20 rounded-xl overflow-hidden'>
+          {files.length ? (
+            <div className='flex gap-2 mt-2 mx-2'>
+              {files?.map((img, i) => (
+                <div key={i} className='aspect-[5/4] w-14 bg-base-200 rounded overflow-hidden'>
+                  <img 
+                    className='object-center object-cover'
+                    src={img?.base64}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : null}
           <textarea
             className='textarea textarea-ghost resize-none w-full focus-within:outline-transparent'
             placeholder='Write message...'
@@ -111,14 +160,24 @@ export default function ClientMessage() {
               }
             }}
           ></textarea>
-          <button 
-            disabled={!msgInput}
-            className='btn bg-transparent border-0 hover:opacity-70 hover:text-primary btn-ghost rounded-full'
-            onClick={sendMessage}
-          >
-            Send
-            <SendHorizonal size={16} />
-          </button>
+          <div className='flex justify-end'>
+            <input ref={fileInputRef} multiple type="file" className='hidden' onChange={handleImageChange} />
+            <button 
+              className='btn font-normal text-base-content/80 bg-transparent border-0 hover:opacity-70 hover:text-primary btn-ghost rounded-full'
+              onClick={() => fileInputRef?.current?.click()}
+            >
+              Attach image
+              <Image size={16} />
+            </button>
+            <button 
+              disabled={!msgInput && !files.length}
+              className='btn bg-transparent border-0 hover:opacity-70 hover:text-primary btn-ghost rounded-full'
+              onClick={sendMessage}
+            >
+              Send
+              <SendHorizonal size={16} />
+            </button>
+          </div>
         </div>
       </div>
     )

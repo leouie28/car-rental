@@ -1,5 +1,6 @@
 import prisma from "../lib/prismaClient.js"
 import dayjs from "dayjs";
+import { io, onlineUsers } from "../server.js"
 
 export const submitBooking = async (req, res) => {
     try {
@@ -56,6 +57,23 @@ export const submitBooking = async (req, res) => {
                 totalPrice: totalPrice,
             }
         })
+
+        const saveSmg = await prisma.message.create({
+            data: {
+                from: userId,
+                to: null,
+                message: "I just submitted a booking request.",
+                attachment: {
+                    bookingId: booking.id,
+                },
+                createdAt: new Date()
+            }
+        })
+
+        const socketId = onlineUsers["admin"]
+        if (socketId) {
+            io.to(socketId).emit("receive_message", saveSmg)
+        }
 
         res.status(200).json({ success: true })
     } catch (error) {

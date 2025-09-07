@@ -96,7 +96,7 @@ export const addCar = async (req, res) => {
 
         if (images.length) {
             await Promise.all(images.map(async (img) => {
-                await prisma.car.update({
+                await prisma.image.update({
                     where: { id: img.id },
                     data: {
                         carId: car.id,

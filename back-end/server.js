@@ -29,21 +29,48 @@ io.on('connection', (socket) => {
   });
 
   // Handle sending message
-  socket.on("send_message", async ({ from, to, message, createdAt }) => {
+  socket.on("send_message", async ({ from, to, message, createdAt, attachment }) => {
     console.log(`${from} -> ${to}: ${message}`);
 
     const saveSmg = await prisma.message.create({
       data: {
-        to: parseInt(to),
-        from: parseInt(from),
+        to: to == "admin" ? null : parseInt(to),
+        from: from == "admin" ? null : parseInt(from),
         message,
-        createdAt
+        createdAt,
+        attachment: attachment || null
       }
     })
 
     const socketId = onlineUsers[to]
     if (socketId) {
       io.to(socketId).emit("receive_message", saveSmg);
+    }
+  });
+
+  socket.on("driver_location", async ({ driverId, lat, lng }) => {
+    console.log(`📍 Driver ${driverId}: ${lat}, ${lng}`);
+
+    const loc = await prisma.location.findFirst({
+      where: { userId: parseInt(driverId) },
+      orderBy: { id: "desc" }
+    })
+
+    if (loc) {
+      await prisma.location.update({
+        where: { id: loc.id },
+        data: { lat: parseFloat(lat), lng: parseFloat(lng) }
+      })
+    }else {
+      await prisma.location.create({
+        data: { userId: parseInt(driverId), lat: parseFloat(lat), lng: parseFloat(lng) }
+      })
+    }
+
+    // Broadcast location to admins only
+    const socketId = onlineUsers["admin"]
+    if (socketId) {
+      io.to(socketId).emit("location_update", { driverId, lat, lng });
     }
   });
 

@@ -1,4 +1,4 @@
-import { SendHorizonal, UserRound } from 'lucide-react'
+import { Image, SendHorizonal, UserRound } from 'lucide-react'
 import React, { useEffect, useState, useRef } from 'react'
 import socket from '../../../socket';
 import { useParams } from 'react-router-dom';
@@ -9,7 +9,6 @@ import { useMessage } from './components/Provider';
 import MessageAttachemnt from '../../../components/MessageAttachemnt';
 
 export default function AdminMessagesSelected() {
-  const adminId = 1
   const { id: clientId } = useParams()
   const [msgInput, setMsgInput] = useState("")
   const messagesEndRef = useRef(null);
@@ -50,10 +49,10 @@ export default function AdminMessagesSelected() {
       <div className="flex-1 gap-2 flex flex-col-reverse pb-4 h-full overflow-y-auto">
         {conversation.map((d, i) => (
           <React.Fragment key={`${d?.id}-${i}`}>
-            {d?.from !== adminId ? (
+            {d?.from && d?.from != "admin" ? (
               <div className="chat chat-start">
                 <div className="chat-header">
-                  {data?.client?.firstName} {data?.client?.lastName}
+                  {data?.client?.firstName} {data?.client?.lastName} {d?.from}
                   <time className="text-xs opacity-50">{dayjs(d?.createdAt).format('YYYY MMM DD h:mm a')}</time>
                 </div>
                 <div className="chat-bubble max-w-md chat-bubble-primary">
@@ -88,7 +87,7 @@ export default function AdminMessagesSelected() {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault()
               sendMessage({
-                from: adminId,
+                from: "admin",
                 to: clientId,
                 message: msgInput,
                 createdAt: new Date
@@ -97,13 +96,28 @@ export default function AdminMessagesSelected() {
             }
           }}
         ></textarea>
-        <div className="flex justify-end mt-2">
+        <div className="flex justify-end gap-2 mt-2">
+          <button 
+            className="btn btn-ghost"
+            onClick={() => {
+              sendMessage({
+                from: "admin",
+                to: clientId,
+                message: msgInput,
+                createdAt: new Date
+              })
+              setMsgInput("")
+            }}
+          >
+            Attach image
+            <Image size={16} />
+          </button>
           <button 
             className="btn"
             disabled={!msgInput}
             onClick={() => {
               sendMessage({
-                from: adminId,
+                from: "admin",
                 to: clientId,
                 message: msgInput,
                 createdAt: new Date

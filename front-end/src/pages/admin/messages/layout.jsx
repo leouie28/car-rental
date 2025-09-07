@@ -9,7 +9,7 @@ import { AdminMessageProvider } from "./components/Provider";
 import MessageList from "./components/MessageList";
 
 export default function MessagesLayout() {
-  const adminId = 1
+  const adminId = import.meta.env.VITE_ADMIN_ID || 1
   const navigate = useNavigate()
   const { id: activeId } = useParams()
 
