@@ -6,6 +6,7 @@ import { CircleCheckBig, Ellipsis, Eye, Plus, SquarePen, Trash2, User } from "lu
 import { useNavigate } from "react-router-dom";
 import { getBookings, updateBookingStatus } from "../../../rest/admin/booking";
 import dayjs from "dayjs";
+import api from "../../../lib/api";
 
 export default function AdminBookingsPage() {
   const navigate = useNavigate()
@@ -22,9 +23,22 @@ export default function AdminBookingsPage() {
     refetchOnWindowFocus: false
   })
 
+  const { data: drivers } = useQuery({
+    queryKey: 'drivers',
+    queryFn: async () => (await api.get('/admin/driver')).data
+  })
+
   const { mutate } = useMutation({
     mutationFn: updateBookingStatus,
     onSuccess: () => refetch()
+  })
+
+  const { mutate: assignDriverMt } = useMutation({
+    mutationFn: async (d) => await api.put(`/admin/booking/${d.id}/assign-driver`, { driverId: d.driverId }),
+    onSuccess: () => {
+      alert('Driver successfully assigned.')
+      refetch()
+    }
   })
 
   return (
@@ -93,6 +107,7 @@ export default function AdminBookingsPage() {
                       <th>Number of Days</th>
                       <th>Total</th>
                       <th>Status</th>
+                      <th>Driver</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -121,6 +136,24 @@ export default function AdminBookingsPage() {
                           >
                             {d?.status}
                           </span>
+                        </td>
+                        <td>
+                          {d?.withDriver && (
+                            <select 
+                              className="select select-ghost select-sm"
+                              value={d?.driverId || ''}
+                              onChange={(e) => {
+                                if (e.target.value) {
+                                  assignDriverMt({ id: d.id, driverId: e.target.value })
+                                }
+                              }}
+                            >
+                              <option value='' disabled>Assign driver</option>
+                              {drivers?.rows?.map((dr) => (
+                                <option value={dr?.id}>{dr?.name}</option>
+                              ))}
+                            </select>
+                          )}
                         </td>
                         <td>
                           <button className="btn btn-sm btn-primary" popoverTarget={`popover-${i}`} style={{ anchorName: `--anchor-${i}` }}>

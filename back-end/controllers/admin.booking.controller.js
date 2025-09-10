@@ -141,6 +141,23 @@ export const updateBookingStatus = async (req, res) => {
                         io.to(socketId).emit("receive_message", saveSmg)
                     }
                 }))
+            }else {
+                const saveSmg = await prisma.message.create({
+                    data: {
+                        from: null,
+                        to: booking.userId,
+                        message: "Admin just update the status of your booking.",
+                        attachment: {
+                            bookingId: parseInt(booking.id),
+                        },
+                        createdAt: new Date()
+                    }
+                })
+
+                const socketId = onlineUsers[booking.userId]
+                if (socketId) {
+                    io.to(socketId).emit("receive_message", saveSmg)
+                }
             }
         }
 
@@ -186,5 +203,41 @@ export const activeBookingToday = async (req, res) => {
     } catch (error) {
         console.log('Error on activeBookingToday:', error);
         res.status(500).send('Server Error');
+    }
+}
+
+export const assignDriverBooking = async (req, res) => {
+    try {
+        const { id } = req.params
+        const { driverId } = req.body
+
+        const booking = await prisma.booking.update({
+            where: { id: parseInt(id) },
+            data: {
+                driverId: parseInt(driverId)
+            }
+        })
+
+        const saveSmg = await prisma.message.create({
+            data: {
+                from: null,
+                to: booking.userId,
+                message: "Admin just assigned driver to your booking.",
+                attachment: {
+                    bookingId: parseInt(booking.id),
+                },
+                createdAt: new Date()
+            }
+        })
+
+        const socketId = onlineUsers[booking.userId]
+        if (socketId) {
+            io.to(socketId).emit("receive_message", saveSmg)
+        }
+
+        res.status(200).json({ success: true })
+    } catch (error) {
+        console.log('Error on assignDriver:', error);
+        res.status(500).send(error);
     }
 }

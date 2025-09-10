@@ -1,6 +1,25 @@
 import prisma from "../lib/prismaClient.js"
 import dayjs from "dayjs";
 import { io, onlineUsers } from "../server.js"
+import { submitBookingRequestMessage } from "../constant/message.js";
+
+export const getBookings = async (req, res) => {
+    try {
+        const userId = req.userId
+        const bookings = await prisma.booking.findMany({
+            where: { userId: parseInt(userId) },
+            include: {
+                car: { include: { images: true } },
+                driver: true
+            }
+        })
+
+        res.status(200).json(bookings)
+    } catch (error) {
+        console.log('Error on getBookings:', error);
+        res.status(500).send(error);
+    }
+}
 
 export const submitBooking = async (req, res) => {
     try {
@@ -73,6 +92,20 @@ export const submitBooking = async (req, res) => {
         const socketId = onlineUsers["admin"]
         if (socketId) {
             io.to(socketId).emit("receive_message", saveSmg)
+        }
+
+        const clientMsg = await prisma.message.create({
+            data: {
+                from: null,
+                to: userId,
+                message: submitBookingRequestMessage,
+                createdAt: new Date()
+            }
+        })
+
+        const clientSocketId = onlineUsers[userId]
+        if (clientSocketId) {
+            io.to(clientSocketId).emit("receive_message", clientMsg)
         }
 
         res.status(200).json({ success: true })

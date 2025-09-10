@@ -67,6 +67,18 @@ model car {
   images            image[]
 }
 
+model driver {
+  id                Int                @id                @default(autoincrement())
+  name              String
+  licenseId         String?
+  licenseExpire     DateTime?
+  avatar            String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  booking           booking[]
+}
+
 model image {
   id                Int                @id                @default(autoincrement())
   carId             Int?               @unique
@@ -87,6 +99,7 @@ model booking {
   dateReturn        DateTime
   pickupLocation    String?
   destination       String?
+  driverId          Int?
   daysBooked        Int?
   withDriver        Boolean
   totalPrice        Float?
@@ -97,8 +110,9 @@ model booking {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
-  user              user             @relation(fields: [userId], references: [id])
+  user              user               @relation(fields: [userId], references: [id])
   car               car                @relation(fields: [carId], references: [id])
+  driver            driver?            @relation(fields: [driverId], references: [id])
 }
 
 enum PaymentType {

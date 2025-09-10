@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
-import { Car, ChartColumnStacked, ChartPie, Clock, MapPinned, Menu, MessageSquareMore } from 'lucide-react';
+import { Car, ChartColumnStacked, ChartPie, CircleUser, Clock, MapPinned, Menu, MessageSquareMore } from 'lucide-react';
 import { useSession } from '../context/SessionContext';
 
 const navs = [
@@ -28,6 +28,11 @@ const navs = [
     name: "Track",
     path: "/admin/track",
     icon: <MapPinned />
+  },
+  {
+    name: "Drivers",
+    path: "/admin/drivers",
+    icon: <CircleUser />
   },
 ]
 

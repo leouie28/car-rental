@@ -69,8 +69,8 @@ export default function index() {
             backgroundPosition: "center",
           }}
         >
-          <h1 className="text-5xl font-medium tracking-wide">
-            Smooth rides<br></br>every time!
+          <h1 className="text-3xl md:text-5xl font-medium tracking-wide">
+            Smooth rides<br className="hidden md:inline"></br>every time!
           </h1>
           <p className="text-lg font-extralight">
             Service Request With Professional Driver
@@ -80,7 +80,7 @@ export default function index() {
           <div className="card-body">
             <h2 className="text-2xl font-semibold text-base-content/80">Find the car you need</h2>
             <form 
-              className="flex items-end gap-4"
+              className="flex items-end flex-wrap gap-4"
               onSubmit={(e) => {
                 e.preventDefault()
               }}
@@ -127,7 +127,7 @@ export default function index() {
         </div>
         <div className="my-10">
           <h2 className="text-2xl">Our car list</h2>
-          <div className="grid grid-cols-3 gap-10 mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mt-4">
             {data?.rows?.map((d, i) => (
               <div key={d?.id || i} className="group cursor-pointer card border border-base-300 hover:shadow">
                 {d.images.length ? (

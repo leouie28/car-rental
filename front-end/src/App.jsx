@@ -13,6 +13,7 @@ import AdminMessages from "./pages/admin/messages";
 import AdminMessagesSelected from "./pages/admin/messages/selected";
 import BookingCreatePage from "./pages/booking/create";
 import AdminBookingsPage from "./pages/admin/bookings";
+import AdminDriversPage from "./pages/admin/drivers";
 
 function App() {
 
@@ -39,6 +40,7 @@ function App() {
             <Route index element={<AdminBookingsPage />} />
           </Route>
           <Route path="track" element={<TrackPage />} />
+          <Route path="drivers" element={<AdminDriversPage />} />
           <Route path="messages" element={<MessagesLayout />}>
             <Route index element={<AdminMessages />} />
             <Route path=":id" element={<AdminMessagesSelected />} />

@@ -55,7 +55,7 @@ export default function AdminMessagesSelected() {
                   {data?.client?.firstName} {data?.client?.lastName} {d?.from}
                   <time className="text-xs opacity-50">{dayjs(d?.createdAt).format('YYYY MMM DD h:mm a')}</time>
                 </div>
-                <div className="chat-bubble max-w-md chat-bubble-primary">
+                <div className="chat-bubble whitespace-pre-line max-w-md chat-bubble-primary">
                   {d?.attachment && <MessageAttachemnt attachment={d.attachment} />}
                   {d?.message}
                 </div>
@@ -67,7 +67,7 @@ export default function AdminMessagesSelected() {
                   {d?.attachment && 'Send by System'}
                   <time className="text-xs opacity-50">{dayjs(d?.createdAt).format('YYYY MMM DD h:mm a')}</time>
                 </div>
-                <div className="chat-bubble max-w-md">
+                <div className="chat-bubble whitespace-pre-line max-w-md">
                   {d?.attachment && <MessageAttachemnt attachment={d.attachment} />}
                   {d?.message}
                 </div>
@@ -97,7 +97,7 @@ export default function AdminMessagesSelected() {
           }}
         ></textarea>
         <div className="flex justify-end gap-2 mt-2">
-          <button 
+          {/* <button 
             className="btn btn-ghost"
             onClick={() => {
               sendMessage({
@@ -111,7 +111,7 @@ export default function AdminMessagesSelected() {
           >
             Attach image
             <Image size={16} />
-          </button>
+          </button> */}
           <button 
             className="btn"
             disabled={!msgInput}

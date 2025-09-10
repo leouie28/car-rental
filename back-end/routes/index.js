@@ -8,6 +8,7 @@ import prisma from "../lib/prismaClient.js";
 import bookingRouter from "./booking.js";
 import clientRouter from "./client.js";
 import adminBookingRouter from "./admin/booking.js";
+import adminDriverRouter from "./admin/driver.js";
 
 const router = express.Router();
 
@@ -36,6 +37,7 @@ router.use("/message", messageRouter);
 
 // admin routers
 router.use("/admin/car", adminCarRouter);
+router.use("/admin/driver", adminDriverRouter);
 router.use("/admin/message", adminMessageRouter);
 router.use("/admin/booking", adminBookingRouter);
 

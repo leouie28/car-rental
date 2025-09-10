@@ -1,0 +1,4 @@
+
+export const submitBookingRequestMessage = `Thankyou For Booking!\nHere is the payment process\n\nStep 1. Send Full Amount, Or Partial Partial, Or Security Deposit to our gcash account: 0987654321\n\nStep 2. Screenshot the Payment receipt\n\nStep 3. Send the screenshot to admin message and wait for confirmation\n\nThankyou..`
+
+export const submitInquireCarMessage = `Thankyou For Inquiring!\nHere is the payment process\n\nStep 1. Send Full Amount, Or Partial Partial, Or Security Deposit to our gcash account: 0987654321\n\nStep 2. Screenshot the Payment receipt\n\nStep 3. Send the screenshot to admin message and wait for confirmation\n\nThankyou..`

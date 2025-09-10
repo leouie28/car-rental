@@ -48,24 +48,24 @@ export default function ClientLayout() {
       <header className={`fixed top-0 left-0 w-full h-[88px] bg-base-100 z-10 ${scrolled ? 'shadow-lg' : ''}`}>
         <Container>
           <nav className='flex items-center justify-between gap-4'>
-            <div className='flex items-center gap-10'>
+            <Link to="/" className='flex items-center gap-10'>
               <img src={logo} className='w-42 h-22 object-cover' />
-            </div>
+            </Link>
             <div className='flex gap-10'>
               {user && !user?.isAdmin ? (
                 <>
-                  <button className='flex items-center gap-2 cursor-pointer hover:text-primary hover:opacity-70'>
+                  <Link to="/booking" className='flex items-center gap-2 cursor-pointer hover:text-primary hover:opacity-70'>
                     <Clock size={20} />
                     Booking
                     {/* <span className='indicator'>
                       <span className="indicator-item badge badge-error badge-xs">12</span>
                       Booking
                     </span> */}
-                  </button>
+                  </Link>
                   <div className="dropdown dropdown-end">
                     <div tabIndex={0} role="button" className="flex items-center gap-2 cursor-pointer focus:text-primary hover:text-primary hover:opacity-70">
                       <User size={20} />
-                      {user?.firstName} {user?.lastName}
+                      <span className='hidden md:inline'>{user?.firstName} {user?.lastName}</span>
                       <ChevronDown size={16} />
                     </div>
                     <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-1 w-44 p-2 shadow-sm">
