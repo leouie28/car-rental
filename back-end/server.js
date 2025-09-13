@@ -48,11 +48,11 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on("driver_location", async ({ driverId, lat, lng }) => {
-    console.log(`📍 Driver ${driverId}: ${lat}, ${lng}`);
+  socket.on("driver_location", async ({ userId, lat, lng }) => {
+    console.log(`📍 Driver ${userId}: ${lat}, ${lng}`);
 
     const loc = await prisma.location.findFirst({
-      where: { userId: parseInt(driverId) },
+      where: { userId: parseInt(userId) },
       orderBy: { id: "desc" }
     })
 
@@ -63,14 +63,14 @@ io.on('connection', (socket) => {
       })
     }else {
       await prisma.location.create({
-        data: { userId: parseInt(driverId), lat: parseFloat(lat), lng: parseFloat(lng) }
+        data: { userId: parseInt(userId), lat: parseFloat(lat), lng: parseFloat(lng) }
       })
     }
 
     // Broadcast location to admins only
     const socketId = onlineUsers["admin"]
     if (socketId) {
-      io.to(socketId).emit("location_update", { driverId, lat, lng });
+      io.to(socketId).emit("location_update", { userId, lat, lng });
     }
   });
 

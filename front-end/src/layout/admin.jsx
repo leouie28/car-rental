@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { Car, ChartColumnStacked, ChartPie, CircleUser, Clock, MapPinned, Menu, MessageSquareMore } from 'lucide-react';
 import { useSession } from '../context/SessionContext';
+import socket from '../socket';
 
 const navs = [
   {
@@ -43,11 +44,12 @@ export default function AdminLayout() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (user) {
-      if (!user?.isAdmin) {
-        navigate("/")
-      }
+    if (!user) return
+    if (!user?.isAdmin) {
+      navigate("/")
     }
+
+    socket.emit("join", "admin")
   }, [user])
   
   return (

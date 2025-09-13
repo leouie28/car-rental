@@ -199,7 +199,7 @@ export const activeBookingToday = async (req, res) => {
                 car: true
             }
         })
-        res.status(200).json(bookings)
+        res.status(200).json(bookings.map((b) => ({ ...b, user: { ...b.user, location: b.user.location[0] } })))
     } catch (error) {
         console.log('Error on activeBookingToday:', error);
         res.status(500).send('Server Error');

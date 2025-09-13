@@ -39,7 +39,7 @@ export function AdminMessageProvider({ children }) {
   }
 
   useEffect(() => {
-    socket.emit("join", "admin")
+    // socket.emit("join", "admin")
 
     socket.on("receive_message", (msg) => {
       if (conversation.length) {

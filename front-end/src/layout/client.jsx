@@ -21,7 +21,7 @@ export default function ClientLayout() {
     const interval = setInterval(() => {
       navigator.geolocation.getCurrentPosition((pos) => {
         socket.emit("driver_location", {
-          driverId: userId,
+          userId: userId,
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
         });
