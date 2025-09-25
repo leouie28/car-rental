@@ -1,9 +1,46 @@
 import prisma from "../lib/prismaClient.js"
+import dayjs from 'dayjs'
 
 export const getCars = async (req, res) => {
     try {
-        const count = await prisma.car.count()
+        const type = req.query.type
+        const start = req.query.start
+        const end = req.query.end
+
+        const whereInput = {
+            deletedAt: null,
+            type: type == "all" ? undefined : type,
+            booking: start && end ? {
+                none: {
+                    AND: [
+                        {
+                            dateStart: {
+                                lt: dayjs(end).startOf('day').toISOString()
+                            },
+                        },
+                        {
+                            dateReturn: {
+                                gt: dayjs(start).startOf('day').toISOString()
+                            },
+                        },
+                        {
+                            status: {
+                                in: ['confirmed', 'paid', 'partially_paid']
+                            }
+                        }
+                    ]
+                }
+            } : undefined
+        }
+        const count = await prisma.car.count({
+            where: {
+                ...whereInput
+            }
+        })
         const rows = await prisma.car.findMany({
+            where: {
+                ...whereInput,
+            },
             include: {
                 images: true
             },
@@ -37,14 +74,13 @@ export const carDetails = async (req, res) => {
     }
 }
 
-export const getCarBrands = async (req, res) => {
-    console.log('getCarBrands called');
+export const getCarTypes = async (req, res) => {
     try {
-        const brands = await prisma.car.groupBy({
-            by: ['make'],
+        const types = await prisma.car.groupBy({
+            by: ['type'],
         })
 
-        res.status(200).json(brands.map(b => b.make))
+        res.status(200).json(types.map(b => b.type))
     } catch (error) {
         console.log('Error on getCarBrands:', error);
         res.status(500).send(error);

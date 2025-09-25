@@ -5,6 +5,7 @@ export const getCars = async (req, res) => {
         const search = req.query.search
         
         const whereInput = {
+            deletedAt: null,
             OR: search ? [
                 {
                     make: {
@@ -57,17 +58,17 @@ export const getCars = async (req, res) => {
                 {
                     withDriverDailyPrice: parseInt(search) ? parseInt(search) : undefined
                 },
-            ] : undefined
+            ] : undefined,
         }
 
         const count = await prisma.car.count({
             where: {
-                ...whereInput
+                ...whereInput,
             }
         })
         const rows = await prisma.car.findMany({
             where: {
-                ...whereInput
+                ...whereInput,
             },
             include: {
                 images: true
@@ -112,12 +113,61 @@ export const addCar = async (req, res) => {
     }
 }
 
+export const editCar = async (req, res) => {
+    const { id } = req.params
+    const { images, ...payload } = req.body
+    try {
+        const car = await prisma.car.update({
+            where: { id: parseInt(id) },
+            data: payload
+        })
+
+        if (images.length) {
+            await Promise.all(images.map(async (img) => {
+                if (!img?.carId) {
+                    await prisma.image.update({
+                        where: { id: img.id },
+                        data: {
+                            carId: car.id,
+                        }
+                    })
+                }
+            }))
+        }
+
+        res.status(200).json({ success: true })
+    } catch (error) {
+        console.log('Error on addCar:', error);
+        res.status(500).send('Server Error');
+    }
+}
+
+export const deleteCar = async (req, res) => {
+    const { id } = req.params
+    try {
+        await prisma.car.update({
+            where: { id: parseInt(id) },
+            data: {
+                deletedAt: new Date().toISOString()
+            }
+        })
+
+        res.status(200).json({ success: true })
+    } catch (error) {
+        console.log('Error on addCar:', error);
+        res.status(500).send('Server Error');
+    }
+}
+
 export const carDetaisl = async (req, res) => {
     const { id } = req.params
     try {
-        console.log(payload)
+        const car = await prisma.car.findFirst({
+            where: { id: parseInt(id) },
+            include: { images: true }
+        })
 
-        res.status(200).json({ success: true })
+        res.status(200).json(car)
     } catch (error) {
         console.log('Error on carDetails:', error);
         res.status(500).send('Server Error');

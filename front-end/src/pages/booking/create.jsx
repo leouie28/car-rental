@@ -37,6 +37,12 @@ export default function BookingCreatePage() {
     enabled: !!carId
   })
 
+  useEffect(() => {
+    if (data) {
+      if (!data?.dailyPrice) setForm((p) => ({ ...p, withDriver: true }))
+    }
+  }, [data])
+
   const { mutate, isPending, error: bookingErr } = useMutation({
     mutationFn: submitBooking,
     onSuccess: (res) => { 
@@ -143,8 +149,8 @@ export default function BookingCreatePage() {
                 <fieldset className="fieldset col-span-2">
                   <legend className="fieldset-legend">Service Type</legend>
                   <label className="label">
-                    <input type="radio" name="type" className='radio' onChange={(e) => setForm((prev) => ({ ...prev, withDriver: !form.withDriver }))} checked={!form.withDriver} />
-                    Self Drive (₱{data?.dailyPrice.toLocaleString('en-US')}/day)
+                    <input disabled={!data?.dailyPrice} type="radio" name="type" className='radio' onChange={(e) => setForm((prev) => ({ ...prev, withDriver: !form.withDriver }))} checked={!form.withDriver} />
+                    Self Drive ({data?.dailyPrice ? '₱ ' + data?.dailyPrice.toLocaleString('en-US') + '/day' : 'Not available'})
                   </label>
                   <label className="label">
                     <input type="radio" name="type" className='radio' onChange={(e) => setForm((prev) => ({ ...prev, withDriver: e.target.checked }))} checked={form.withDriver} />

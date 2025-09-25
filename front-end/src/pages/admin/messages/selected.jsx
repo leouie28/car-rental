@@ -52,7 +52,7 @@ export default function AdminMessagesSelected() {
             {d?.from && d?.from != "admin" ? (
               <div className="chat chat-start">
                 <div className="chat-header">
-                  {data?.client?.firstName} {data?.client?.lastName} {d?.from}
+                  {data?.client?.firstName} {data?.client?.lastName}
                   <time className="text-xs opacity-50">{dayjs(d?.createdAt).format('YYYY MMM DD h:mm a')}</time>
                 </div>
                 <div className="chat-bubble whitespace-pre-line max-w-md chat-bubble-primary">

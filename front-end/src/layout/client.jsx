@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useNavigate } from "react-router-dom";
 import Container from '../components/Container';
 import logo from './../assets/icon.png'
 import { Bell, ChevronDown, Clock, LogOut, MessageSquareMore, User } from 'lucide-react';
@@ -13,6 +13,7 @@ export default function ClientLayout() {
   const { user, logout } = useSession()
   const userId = user?.id
   const [scrolled, setScrolled] = useState(false)
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (!userId) return
@@ -74,6 +75,7 @@ export default function ClientLayout() {
                           onClick={(e) => {
                             e.currentTarget.blur()
                             e.preventDefault()
+                            navigate('/account')
                           }}
                         >
                           <User size={16} />
@@ -100,10 +102,15 @@ export default function ClientLayout() {
           </nav>
         </Container>
       </header>
-      <main className='pt-[88px] h-full'>
+      <main className='pt-[88px] min-h-full'>
         <Outlet />
       </main>
       {(user && !user?.isAdmin) && <ClientMessage />}
+      <footer className="footer sm:footer-horizontal footer-center bg-base-300 text-base-content p-4">
+        <aside>
+          <p>Copyright © {new Date().getFullYear()} - All right reserved by JS Transportation</p>
+        </aside>
+      </footer>
     </div>
   )
 }

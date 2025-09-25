@@ -163,7 +163,7 @@ export default function AdminDriversPage() {
                       <tr key={d.id}>
                         <td>{d?.name}</td>
                         <td>{d?.licenseId}</td>
-                        <td>{d?.licenseExpire}</td>
+                        <td>{dayjs(d?.licenseExpire).format('MMM DD, YYYY')}</td>
                         <td>{dayjs(d?.createdAt).format("MMM DD, YYYY")}</td>
                         <td>
                           <button className="btn text-primary btn-ghost btn-sm">

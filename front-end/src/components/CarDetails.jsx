@@ -26,79 +26,108 @@ export default function CarDetails({ user, car, setCar }) {
 
   return (
     <dialog id="inquire_dialog" className="modal" onClose={() => setCar()}>
-      <div className="modal-box max-w-md w-full space-y-6">
-        {car?.images.length ? (
-          <figure className="aspect-video w-full rounded-lg overflow-hidden">
-            <img
-              className="group-hover:scale-102 transition-transform w-full h-full object-cover object-center"
-              src={car.images[0].base64}
-              alt="Car image"
-            />
-          </figure>
-        ) : (
-          <div className="aspect-video w-full flex items-center justify-center bg-base-200 rounded-lg">
-            <FileQuestionMark className="group-hover:scale-102 transition-transform text-base-content/60" size={42} />
-          </div>
-        ) }
-        <div className="collapse collapse-arrow bg-base-200">
-          <input type="checkbox" defaultChecked />
-          <div className="collapse-title font-semibold">
-            {car?.make} - {car?.model} {car?.year} ({car?.color})
-          </div>
-          <div className='collapse-content space-y-3 text-base-content/80'>
-            <div className='flex justify-between items-center'>
-              Transmission
-              <span className='capitalize font-medium'>{car?.transmission}</span>
+      <div className="modal-box max-w-md md:max-w-3xl w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          {car?.images.length ? (
+            <figure className="aspect-video w-full rounded-lg overflow-hidden">
+              <img
+                className="group-hover:scale-102 transition-transform w-full h-full object-cover object-center"
+                src={car.images[0].base64}
+                alt="Car image"
+              />
+            </figure>
+          ) : (
+            <div className="aspect-video w-full flex items-center justify-center bg-base-200 rounded-lg">
+              <FileQuestionMark className="group-hover:scale-102 transition-transform text-base-content/60" size={42} />
             </div>
-            <div className='flex justify-between items-center'>
-              Fuel
-              <span className='capitalize font-medium'>{car?.fuelType}</span>
-            </div>
-            <div className='flex justify-between items-center'>
-              Seats
-              <span className='capitalize font-medium'>{car?.seatCount}</span>
-            </div>
-            <div className='flex justify-between items-center'>
-              Doors
-              <span className='capitalize font-medium'>{car?.doorCount}</span>
-            </div>
-            <div className="divider"></div>
-            <div className='flex justify-between items-center'>
-              Security Deposit
-              <span className='capitalize font-medium'>₱{car?.securityDeposit ? car?.securityDeposit.toLocaleString('en-US') : '0'}</span>
-            </div>
-            <div className='flex justify-between items-center'>
-              Selft Drive Rate
-              <span className='capitalize font-medium'>₱{car?.dailyPrice.toLocaleString('en-US')}</span>
-            </div>
-            <div className='flex justify-between items-center'>
-              With Driver Rate
-              <span className='capitalize font-medium'>₱{car?.withDriverDailyPrice ? car?.withDriverDailyPrice.toLocaleString('en-US') : '0'}</span>
-            </div>
-          </div>
+          ) }
         </div>
-        <div className="collapse collapse-arrow bg-base-200">
-          <input type="checkbox" />
-          <div className="collapse-title font-semibold">Optional message</div>
-          <div className="collapse-content">
-            <textarea
-              className='textarea w-full'
-              placeholder='Write additional message...'
-              value={msgInpu}
-              onChange={(e) => setMsgInput(e.target.value)}
-            ></textarea>
+        <div className='space-y-6'>
+          <div className="collapse collapse-arrow bg-base-200">
+            <input type="checkbox" defaultChecked />
+            <div className="collapse-title font-semibold">
+              {car?.make} - {car?.model} {car?.year} ({car?.color})
+            </div>
+            <div className='collapse-content space-y-3 text-base-content/80'>
+              <div className='flex justify-between items-center'>
+                Transmission
+                <span className='capitalize font-medium'>{car?.transmission}</span>
+              </div>
+              <div className='flex justify-between items-center'>
+                Fuel
+                <span className='capitalize font-medium'>{car?.fuelType}</span>
+              </div>
+              <div className='flex justify-between items-center'>
+                Seats
+                <span className='capitalize font-medium'>{car?.seatCount}</span>
+              </div>
+              <div className='flex justify-between items-center'>
+                Doors
+                <span className='capitalize font-medium'>{car?.doorCount}</span>
+              </div>
+              <div className="divider"></div>
+              <div className='flex justify-between items-center'>
+                Security Deposit
+                <span className='capitalize font-medium'>₱{car?.securityDeposit ? car?.securityDeposit.toLocaleString('en-US') : '0'}</span>
+              </div>
+              <div className='flex justify-between items-center'>
+                Selft Drive Rate
+                <span className='capitalize font-medium'>₱{car?.dailyPrice.toLocaleString('en-US')}</span>
+              </div>
+              <div className='flex justify-between items-center'>
+                With Driver Rate
+                <span className='capitalize font-medium'>₱{car?.withDriverDailyPrice ? car?.withDriverDailyPrice.toLocaleString('en-US') : '0'}</span>
+              </div>
+            </div>
           </div>
+          <div className="collapse collapse-arrow bg-base-200">
+            <input type="checkbox" />
+            <div className="collapse-title font-semibold">Features</div>
+            <div className="collapse-content">
+              <p className='text-sm whitespace-pre-line'>{car?.features || 'No data provided here'}</p>
+            </div>
+          </div>
+          <div className="collapse collapse-arrow bg-base-200">
+            <input type="checkbox" />
+            <div className="collapse-title font-semibold">Details</div>
+            <div className="collapse-content">
+              <p className='text-sm whitespace-pre-line'>{car?.otherDetails || 'No data provided here'}</p>
+            </div>
+          </div>
+          {user && !user?.isAdmin && (
+            <div className="collapse collapse-arrow bg-base-200">
+              <input type="checkbox" />
+              <div className="collapse-title font-semibold">Optional message</div>
+              <div className="collapse-content">
+                <textarea
+                  className='textarea w-full'
+                  placeholder='Write additional message...'
+                  value={msgInpu}
+                  onChange={(e) => setMsgInput(e.target.value)}
+                ></textarea>
+              </div>
+            </div>
+          )}
+          <div className='space-y-2'>
+            {user && !user?.isAdmin && (
+              <button 
+                className="btn btn-primary btn-block"
+                disabled={isPending}
+                onClick={() => mutate({ message: msgInpu, carId: car.id })}
+              >
+                Send inquiry to admin
+                <SendHorizonal size={18} />
+              </button>
+            )}
+            <button 
+              className="btn btn-block btn-ghost"
+              disabled={isPending}
+              onClick={() => document?.getElementById("inquire_dialog")?.close()}
+            >
+              Close
+            </button>
+          </div> 
         </div>
-        {user && !user?.isAdmin && (
-          <button 
-            className="btn btn-primary btn-block"
-            disabled={isPending}
-            onClick={() => mutate({ message: msgInpu, carId: car.id })}
-          >
-            Send inquiry to admin
-            <SendHorizonal size={18} />
-          </button>
-        )}
       </div>
       <form method="dialog" className="modal-backdrop">
         <button>close</button>

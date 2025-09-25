@@ -47,6 +47,7 @@ model license {
 
 model car {
   id                Int                @id                @default(autoincrement())
+  type              String?
   make              String
   model             String
   year              Int
@@ -58,10 +59,11 @@ model car {
   otherDetails      String?
   features          String?
   securityDeposit   Float?
-  dailyPrice        Float
+  dailyPrice        Float?
   withDriverDailyPrice  Float?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
+  deletedAt         DateTime?
 
   booking           booking[]
   images            image[]
@@ -81,7 +83,7 @@ model driver {
 
 model image {
   id                Int                @id                @default(autoincrement())
-  carId             Int?               @unique
+  carId             Int?               
   licenseId         Int?
   base64            String
   type              String?

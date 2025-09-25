@@ -13,29 +13,34 @@ import { getCarBrands, getCars } from "../../rest/car";
 import { useSession } from "../../context/SessionContext";
 import { useNavigate } from "react-router-dom";
 import CarDetails from "../../components/CarDetails";
+import api from "../../lib/api";
+import dayjs from "dayjs";
 
 export default function index() {
+  const now = dayjs().format('YYYY-MM-DD')
   const { user } = useSession()
   const navigate = useNavigate()
   const [selectedCar, setSelectedCar] = useState(null);
   const [filters, setFilters] = useState({
-    make: "",
-    dateStart: "",
-    dateReturn: ""
+    type: "all",
+    start: "",
+    end: ""
   })
 
-  const { data, isLoading } = useQuery({
+  const { data, isFetching, refetch } = useQuery({
     queryKey: ["client-cars"],
-    queryFn: () => getCars({
-      dateStart: "",
-      dateEnd: "",
-    }),
+    queryFn: async () => (await api.get('/car', { params: filters })).data,
     refetchOnWindowFocus: false,
+    enabled: false
   });
 
-  const { data: brands } = useQuery({
-    queryKey: ["client-car-brands"],
-    queryFn: getCarBrands,
+  useEffect(() => {
+    refetch()
+  }, [])
+
+  const { data: types } = useQuery({
+    queryKey: ["client-car-types"],
+    queryFn: async () => (await api.get('/car/types')).data,
     refetchOnWindowFocus: false,
   });
 
@@ -83,19 +88,20 @@ export default function index() {
               className="flex items-end flex-wrap gap-4"
               onSubmit={(e) => {
                 e.preventDefault()
+                refetch()
               }}
             >
               <fieldset className="fieldset flex-1">
-                <legend className="fieldset-legend">Brand</legend>
+                <legend className="fieldset-legend">Type of vehicle</legend>
                 <select 
                   className="select w-full"
-                  value={filters.make}
-                  onChange={(e) => setFilters(prev => ({ ...prev, make: e.target.value }))}
+                  value={filters.type}
+                  onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
                   required={!filters.dateStart && !filters.dateReturn}
                 >
-                  <option value="">All Brands</option>
-                  {brands?.map((b, i) => (
-                    <option key={i} value={b} className="capitalize">{b}</option>
+                  <option value="all">All vehicle types</option>
+                  {types?.map((b, i) => (
+                    <option key={i} value={b} className="uppercase">{b.toUpperCase()}</option>
                   ))}
                 </select>
               </fieldset>
@@ -105,6 +111,12 @@ export default function index() {
                   type="date"
                   className="input w-full"
                   placeholder="Type here"
+                  required={filters.end}
+                  min={now}
+                  value={filters.start}
+                  onChange={(e) => {
+                    setFilters((p) => ({ ...p, end: '', start: dayjs(e.target.valueAsDate).format('YYYY-MM-DD')}))
+                  }}
                 />
               </fieldset>
               <fieldset className="fieldset flex-1">
@@ -113,12 +125,16 @@ export default function index() {
                   type="date"
                   className="input w-full"
                   placeholder="Type here"
+                  required={filters.start}
+                  min={filters.start ? dayjs(filters.start).add(1, 'day').format('YYYY-MM-DD') : now}
+                  value={filters.end}
+                  onChange={(e) => setFilters((p) => ({ ...p, end: dayjs(e.target.valueAsDate).format('YYYY-MM-DD')}))}
                 />
               </fieldset>
               <fieldset className="fieldset">
                 <legend className="fieldset-legend"></legend>
-                <button type="submit" className="btn btn-primary">
-                  Search available
+                <button disabled={isFetching} type="submit" className="btn btn-primary">
+                  {isFetching ? 'Searching...' : 'Search available'}
                   <Search size={18} />
                 </button>
               </fieldset>
@@ -144,10 +160,15 @@ export default function index() {
                   </div>
                 ) }
                 <div className="card-body">
-                  <h2 className="card-title group-hover:underline">
+                  <h2 onClick={() => setSelectedCar(d)} className="card-title group-hover:underline">
                     {d?.make} - {d?.model} {d?.year} ({d?.color})
                   </h2>
-                  <h3 className="text-primary text-lg">₱{d?.dailyPrice.toLocaleString('en-US')}/day</h3>
+                  <div className="flex gap-2 items-center">
+                    <h3 className="text-primary text-lg">
+                      ₱ {d?.dailyPrice ? d?.dailyPrice.toLocaleString('en-US') : d?.withDriverDailyPrice.toLocaleString('en-US')}/day
+                    </h3>
+                    <div className="badge badge-soft badge-sm">{d?.dailyPrice ? 'Self Drive' : 'With Driver'}</div>
+                  </div>
                   <div className="flex justify-between my-3 text-base-content/70">
                     <div className="flex gap-2 items-center">
                       <svg

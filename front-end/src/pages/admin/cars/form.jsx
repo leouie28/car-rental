@@ -1,12 +1,15 @@
 import React, { useRef, useState } from 'react'
 import Container from '../../../components/Container'
 import { ImageUp } from 'lucide-react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { addCar } from '../../../rest/admin/car'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import api from '../../../lib/api'
+import { useEffect } from 'react'
+import { useLocation } from "react-router-dom";
 
 const emptyForm = {
+  type: "",
   make: "",
   model: "",
   year: 2010,
@@ -24,13 +27,40 @@ const emptyForm = {
 }
 
 export default function AdminCarForm() {
+  const { id: carId } = useParams()
+  const { pathname } = useLocation()
   const navigate = useNavigate()
   const [form, setForm] = useState(emptyForm)
   const imgInputRef = useRef(null)
   const [imgLoading, setImgLoading] = useState(false)
+  const [readOnly, setReadOnly] = useState(false)
+
+  const { data: car } = useQuery({
+    queryKey: ['car', carId],
+    queryFn: async () => (await api.get(`/admin/car/${carId}`)).data,
+    enabled: !!carId
+  })
+
+  useEffect(() => {
+    if (car) {
+      setForm(car)
+      const strs = pathname.split('/')
+      if (strs.at(-1)!=="edit") {
+        setReadOnly(true)
+      }
+    }
+  }, [car])
 
   const { mutate, isPending } = useMutation({
     mutationFn: addCar,
+    onSuccess: () => {
+      setForm(emptyForm)
+      navigate("/admin/cars")
+    }
+  })
+
+  const { mutate: edit, isPending: isEditLoading } = useMutation({
+    mutationFn: async () => (await api.put(`/admin/car/${carId}`, form)).data,
     onSuccess: () => {
       setForm(emptyForm)
       navigate("/admin/cars")
@@ -76,18 +106,25 @@ export default function AdminCarForm() {
     <div className='py-10'>
       <Container>
         <div className='space-y-4'>
-          <h1 className='text-2xl font-semibold'>Add new car</h1>
+          <h1 className='text-2xl font-semibold'>
+            {readOnly ? 'View Car' : carId ? 'Edit Car' : 'Add New Car'}
+          </h1>
           <div className="card bg-base-100">
             <div className="card-body">
               <form 
                 onSubmit={(e) => {
                   e.preventDefault()
-                  mutate({
+                  const payload = {
                     ...form,
                     securityDeposit: form.securityDeposit ? Number(form.securityDeposit) : null,
                     dailyPrice: Number(form.dailyPrice),
                     withDriverDailyPrice: Number(form.withDriverDailyPrice)
-                  })
+                  }
+                  if (carId) {
+                    edit(payload)
+                  }else {
+                    mutate(payload)
+                  }
                 }} 
                 className=''
               >
@@ -102,6 +139,7 @@ export default function AdminCarForm() {
                       required
                       value={form.make}
                       onChange={(e) => setForm(prev => ({ ...prev, make: e.target.value }))}
+                      readOnly={readOnly}
                     />
                   </fieldset>
                   <fieldset className="fieldset">
@@ -112,6 +150,7 @@ export default function AdminCarForm() {
                       required
                       value={form.model}
                       onChange={(e) => setForm(prev => ({ ...prev, model: e.target.value }))}
+                      readOnly={readOnly}
                     />
                   </fieldset>
                   <fieldset className="fieldset">
@@ -122,7 +161,26 @@ export default function AdminCarForm() {
                       required
                       value={form.year}
                       onChange={(e) => setForm(prev => ({ ...prev, year: Number(e.target.value) }))}
+                      readOnly={readOnly}
                     />
+                  </fieldset>
+                  <fieldset className="fieldset">
+                    <legend className="fieldset-legend">Type</legend>
+                    <select 
+                      className={`select w-full ${readOnly?'pointer-events-none':''}`}
+                      required
+                      value={form.type}
+                      onChange={(e) => setForm(prev => ({ ...prev, type: e.target.value }))}
+                    >
+                      <option value="" disabled>Select type</option>
+                      <option value="sedan">Sedan</option>
+                      <option value="suv">Suv</option>
+                      <option value="pickup">Pickup</option>
+                      <option value="minivan">Minivan</option>
+                      <option value="van">Van</option>
+                      <option value="compact">Compact</option>
+                      <option value="economy">Economy</option>
+                    </select>
                   </fieldset>
                   <fieldset className="fieldset">
                     <legend className="fieldset-legend">Color</legend>
@@ -132,12 +190,13 @@ export default function AdminCarForm() {
                       required
                       value={form.color}
                       onChange={(e) => setForm(prev => ({ ...prev, color: e.target.value }))}
+                      readOnly={readOnly}
                     />
                   </fieldset>
                   <fieldset className="fieldset">
                     <legend className="fieldset-legend">Transmission</legend>
                     <select 
-                      className='select w-full'
+                      className={`select w-full ${readOnly?'pointer-events-none':''}`}
                       required
                       value={form.transmission}
                       onChange={(e) => setForm(prev => ({ ...prev, transmission: e.target.value }))}
@@ -151,10 +210,11 @@ export default function AdminCarForm() {
                   <fieldset className="fieldset">
                     <legend className="fieldset-legend">Fuel</legend>
                     <select 
-                      className='select w-full'
+                      className={`select w-full ${readOnly?'pointer-events-none':''}`}
                       required
                       value={form.fuelType}
                       onChange={(e) => setForm(prev => ({ ...prev, fuelType: e.target.value }))}
+                      readOnly={readOnly}
                     >
                       <option value="">Select fuel</option>
                       <option value="diesel">Diesel</option>
@@ -169,6 +229,7 @@ export default function AdminCarForm() {
                       required
                       value={form.seatCount === null ? '' : form.seatCount}
                       onChange={(e) => setForm(prev => ({ ...prev, seatCount: e.target.value === '' ? null : Number(e.target.value) }))}
+                      readOnly={readOnly}
                     />
                   </fieldset>
                   <fieldset className="fieldset">
@@ -179,6 +240,7 @@ export default function AdminCarForm() {
                       required
                       value={form.doorCount === null ? '' : form.doorCount}
                       onChange={(e) => setForm(prev => ({ ...prev, doorCount: e.target.value === '' ? null : Number(e.target.value) }))}
+                      readOnly={readOnly}
                     />
                   </fieldset>
                   <fieldset className="fieldset col-span-3">
@@ -188,6 +250,7 @@ export default function AdminCarForm() {
                       placeholder='Optional'
                       value={form.otherDetails}
                       onChange={(e) => setForm(prev => ({ ...prev, otherDetails: e.target.value }))}
+                      readOnly={readOnly}
                     ></textarea>
                   </fieldset>
                   <fieldset className="fieldset col-span-3">
@@ -197,6 +260,7 @@ export default function AdminCarForm() {
                       placeholder={`- Bluetooth\n- Dash Cam`}
                       value={form.features}
                       onChange={(e) => setForm(prev => ({ ...prev, features: e.target.value }))}
+                      readOnly={readOnly}
                     ></textarea>
                   </fieldset>
                 </div>
@@ -211,6 +275,7 @@ export default function AdminCarForm() {
                         className="grow" 
                         value={form.securityDeposit}
                         onChange={(e) => setForm(prev => ({ ...prev, securityDeposit: e.target.value }))}
+                        readOnly={readOnly}
                       />
                     </label>
                   </fieldset>
@@ -221,9 +286,9 @@ export default function AdminCarForm() {
                       <input 
                         type="number" 
                         className="grow" 
-                        required
                         value={form.dailyPrice}
                         onChange={(e) => setForm(prev => ({ ...prev, dailyPrice: e.target.value }))}
+                        readOnly={readOnly}
                       />
                     </label>
                   </fieldset>
@@ -234,9 +299,9 @@ export default function AdminCarForm() {
                       <input 
                         type="number" 
                         className="grow" 
-                        required
                         value={form.withDriverDailyPrice}
                         onChange={(e) => setForm(prev => ({ ...prev, withDriverDailyPrice: e.target.value }))}
+                        readOnly={readOnly}
                       />
                     </label>
                   </fieldset>
@@ -259,29 +324,53 @@ export default function AdminCarForm() {
                       alt="Car image"
                     />
                   ))}
-                  <div 
-                    className='bg-base-200 text-base-content/60 hover:text-base-content/90 hover:underline active:scale-101 border border-base-content/20 border-dashed aspect-[3/2] w-full rounded-lg flex flex-col gap-2 justify-center items-center cursor-pointer'
-                    onClick={() => imgInputRef?.current?.click()}
-                  >
-                    <ImageUp size={24} />
-                    Add Images
-                  </div>
+                  {!readOnly && (
+                    <div 
+                      className='bg-base-200 text-base-content/60 hover:text-base-content/90 hover:underline active:scale-101 border border-base-content/20 border-dashed aspect-[3/2] w-full rounded-lg flex flex-col gap-2 justify-center items-center cursor-pointer'
+                      onClick={() => imgInputRef?.current?.click()}
+                    >
+                      <ImageUp size={24} />
+                      Add Images
+                    </div>
+                  )}
                 </div>
                 <div className='flex justify-end gap-2'>
-                  <button 
-                    type="reset" 
-                    className='btn btn-ghost'
-                    disabled={isPending}
-                  >
-                    Reset
-                  </button>
-                  <button 
-                    type="submit" 
-                    className='btn btn-primary'
-                    disabled={isPending||imgLoading}
-                  >
-                    {isPending ? 'Processing...' : 'Add Car'}
-                  </button>
+                  {carId ? (
+                    <button 
+                      type="button" 
+                      className='btn btn-ghost'
+                      onClick={() => navigate('/admin/cars')}
+                    >
+                      Back
+                    </button>
+                  ) : (
+                    <button 
+                      type="reset" 
+                      className='btn btn-ghost'
+                      disabled={isPending}
+                    >
+                      Reset
+                    </button>
+                  )}
+                  {readOnly ? (
+                    <button 
+                      type="button" 
+                      className='btn btn-primary'
+                      onClick={() => {
+                        return window.location = `/admin/cars/${carId}/edit`
+                      }}
+                    >
+                      Edit Car
+                    </button>
+                  ) : (
+                    <button 
+                      type="submit" 
+                      className='btn btn-primary'
+                      disabled={isPending||imgLoading}
+                    >
+                      {isPending ? 'Processing...' : 'Submit'}
+                    </button>
+                  )}
                 </div>
               </form>
             </div>

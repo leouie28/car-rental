@@ -2,17 +2,19 @@ import React, { useState } from "react";
 import Container from "../../../components/Container";
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { getCars } from '../../../rest/admin/car'
-import { CircleCheckBig, Ellipsis, Eye, Plus, SquarePen, Trash2, User } from "lucide-react";
+import { Check, CircleCheckBig, Ellipsis, Eye, Plus, SquarePen, Trash2, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getBookings, updateBookingStatus } from "../../../rest/admin/booking";
 import dayjs from "dayjs";
 import api from "../../../lib/api";
+import BookingDetails from "../../../components/BookingDetails";
 
 export default function AdminBookingsPage() {
   const navigate = useNavigate()
   const [search, setSearch] = useState("")
   const [status, setStatus] = useState("all")
   const [searchText, setSearchText] = useState("")
+  const [selected, setSelected] = useState(null)
   
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['admin-bookings', status, search],
@@ -43,6 +45,10 @@ export default function AdminBookingsPage() {
 
   return (
     <div className="py-10 min-h-screen">
+      <BookingDetails 
+        b={selected}
+        onClose={() => setSelected(null)}
+      />
       <Container>
         <div>
           <h1 className="text-2xl font-bold mb-4">Bookings</h1>
@@ -107,8 +113,8 @@ export default function AdminBookingsPage() {
                       <th>Number of Days</th>
                       <th>Total</th>
                       <th>Status</th>
-                      <th>Driver</th>
-                      <th></th>
+                      <th className="min-w-40">Driver</th>
+                      <th className="min-w-40"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -121,7 +127,9 @@ export default function AdminBookingsPage() {
                           </div>
                         </td>
                         <td>
-                          {d?.car?.make} - {d?.car?.model} {d?.car?.year} ({d?.car?.color})
+                          {d?.car?.deletedAt ? 'Deleted Car' : (
+                            <span className="capitalize">{d?.car?.make} - {d?.car?.model} {d?.car?.year} ({d?.car?.type})</span>
+                          )}
                         </td>
                         <td>{dayjs(d?.dateStart).format('MMM DD YYYY')}</td>
                         <td>{dayjs(d?.dateReturn).format('MMM DD YYYY')}</td>
@@ -150,37 +158,48 @@ export default function AdminBookingsPage() {
                             >
                               <option value='' disabled>Assign driver</option>
                               {drivers?.rows?.map((dr) => (
-                                <option value={dr?.id}>{dr?.name}</option>
+                                <option key={dr?.id} value={dr?.id}>{dr?.name}</option>
                               ))}
                             </select>
                           )}
                         </td>
                         <td>
-                          <button className="btn btn-sm btn-primary" popoverTarget={`popover-${i}`} style={{ anchorName: `--anchor-${i}` }}>
-                            Action
-                            <Ellipsis size={16} />
-                          </button>
+                          <div className="space-x-2">
+                            <button 
+                              className="btn btn-xs btn-ghost"
+                              onClick={() => setSelected(d)}
+                            >
+                              <Eye size={14} />
+                              View
+                              {/* <Ellipsis size={16} /> */}
+                            </button>
+                            <button className="btn btn-xs btn-ghost text-primary" popoverTarget={`popover-${i}`} style={{ anchorName: `--anchor-${i}` }}>
+                              {/* <Ellipsis size={16} /> */}
+                              <Check size={14} />
+                              Action
+                            </button>
 
-                          <ul 
-                            className="dropdown dropdown-end menu w-auto rounded-box bg-base-100 shadow-sm"
-                            popover="auto" id={`popover-${i}`} style={{ positionAnchor: `--anchor-${i}` }}
-                          >
-                            <li onClick={() => mutate({ id: d.id, status: 'confirmed'})} className={`${d.status == 'confirmed' ? 'pointer-events-none opacity-60' : ''}`}>
-                              <a>Mark as Confirmed</a>
-                            </li>
-                            <li onClick={() => mutate({ id: d.id, status: 'partially_paid' })} className={`${d.status == 'partially_paid' ? 'pointer-events-none opacity-60' : ''}`}>
-                              <a>Mark as Partially Paid</a>
-                            </li>
-                            <li onClick={() => mutate({ id: d.id, status: 'paid' })} className={`${d.status == 'paid' ? 'pointer-events-none opacity-60' : ''}`}>
-                              <a>Mark as Fully Paid</a>
-                            </li>
-                            <li onClick={() => mutate({ id: d.id, status: 'completed' })} className={`${d.status == 'completed' ? 'pointer-events-none opacity-60' : ''}`}>
-                              <a>Mark as Completed</a>
-                            </li>
-                            <li onClick={() => mutate({ id: d.id, status: 'cancelled' })} className={`${d.status == 'cancelled' ? 'pointer-events-none opacity-60' : ''}`}>
-                              <a>Mark as Cancelled</a>
-                            </li>
-                          </ul>
+                            <ul 
+                              className="dropdown dropdown-end menu w-auto rounded-box bg-base-100 shadow-sm"
+                              popover="auto" id={`popover-${i}`} style={{ positionAnchor: `--anchor-${i}` }}
+                            >
+                              <li onClick={() => mutate({ id: d.id, status: 'confirmed'})} className={`${d.status == 'confirmed' ? 'pointer-events-none opacity-60' : ''}`}>
+                                <a>Mark as Confirmed</a>
+                              </li>
+                              <li onClick={() => mutate({ id: d.id, status: 'partially_paid' })} className={`${d.status == 'partially_paid' ? 'pointer-events-none opacity-60' : ''}`}>
+                                <a>Mark as Partially Paid</a>
+                              </li>
+                              <li onClick={() => mutate({ id: d.id, status: 'paid' })} className={`${d.status == 'paid' ? 'pointer-events-none opacity-60' : ''}`}>
+                                <a>Mark as Fully Paid</a>
+                              </li>
+                              <li onClick={() => mutate({ id: d.id, status: 'completed' })} className={`${d.status == 'completed' ? 'pointer-events-none opacity-60' : ''}`}>
+                                <a>Mark as Completed</a>
+                              </li>
+                              <li onClick={() => mutate({ id: d.id, status: 'cancelled' })} className={`${d.status == 'cancelled' ? 'pointer-events-none opacity-60' : ''}`}>
+                                <a>Mark as Cancelled</a>
+                              </li>
+                            </ul>
+                          </div>
                         </td>
                       </tr>
                     ))}

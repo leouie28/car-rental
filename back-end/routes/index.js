@@ -9,6 +9,7 @@ import bookingRouter from "./booking.js";
 import clientRouter from "./client.js";
 import adminBookingRouter from "./admin/booking.js";
 import adminDriverRouter from "./admin/driver.js";
+import adminReportRouter from "./admin/report.js";
 
 const router = express.Router();
 
@@ -40,5 +41,6 @@ router.use("/admin/car", adminCarRouter);
 router.use("/admin/driver", adminDriverRouter);
 router.use("/admin/message", adminMessageRouter);
 router.use("/admin/booking", adminBookingRouter);
+router.use("/admin/report", adminReportRouter);
 
 export default router;

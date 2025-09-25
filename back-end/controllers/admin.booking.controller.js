@@ -59,7 +59,9 @@ export const getBookings = async (req, res) => {
                 ...whereInput
             },
             include: {
-                car: true,
+                car: {
+                    include: { images: true }
+                },
                 user: true
             },
             orderBy: {

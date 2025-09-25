@@ -1,21 +1,29 @@
 import React, { useState } from "react";
 import Container from "../../../components/Container";
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { getCars } from '../../../rest/admin/car'
 import { Ellipsis, Eye, Plus, SquarePen, Trash2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import api from "../../../lib/api";
 
 export default function AdminCarsPage() {
   const navigate = useNavigate()
   const [search, setSearch] = useState("")
   const [searchText, setSearchText] = useState("")
   
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ['cars', search],
     queryFn: () => getCars({
       search: search
     }),
     refetchOnWindowFocus: false
+  })
+
+  const { mutate: deleteMt, isPending } = useMutation({
+    mutationFn: async (id) => (await api.delete(`/admin/car/${id}`)).data,
+    onSuccess: (data) => {
+      refetch()
+    }
   })
 
   return (
@@ -83,18 +91,25 @@ export default function AdminCarsPage() {
                         <td className="capitalize">{d?.fuelType}</td>
                         <td>{d?.seatCount}</td>
                         <td>{d?.doorCount}</td>
-                        <td>₱{d?.dailyPrice.toLocaleString('en-US')}</td>
-                        <td>₱{d?.withDriverDailyPrice.toLocaleString('en-US')}</td>
+                        <td>{d?.dailyPrice ? '₱' + d?.dailyPrice.toLocaleString('en-US') : 'Not available'}</td>
+                        <td>{d?.withDriverDailyPrice ? '₱ ' + d?.withDriverDailyPrice.toLocaleString('en-US') : 'Not available'}</td>
                         <td>
-                          <button className="btn btn-ghost btn-sm">
+                          <Link to={`/admin/cars/${d?.id}`} className="btn btn-ghost btn-sm">
                             <Eye size={14} />
                             View
-                          </button>
-                          <button className="btn text-primary btn-ghost btn-sm">
+                          </Link>
+                          <Link to={`/admin/cars/${d?.id}/edit`} className="btn text-primary btn-ghost btn-sm">
                             <SquarePen size={14} />
                             Edit
-                          </button>
-                          <button className="btn text-error btn-ghost btn-sm">
+                          </Link>
+                          <button 
+                            className="btn text-error btn-ghost btn-sm"
+                            onClick={async () => {
+                              if (confirm("Are you sure you want to delete this car?")) {
+                                deleteMt(d?.id)
+                              }
+                            }}
+                          >
                             <Trash2 size={14} />
                             Delete
                           </button>

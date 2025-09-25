@@ -4,7 +4,6 @@ import HomePage from "./pages/home"
 import ClientLayout from "./layout/client";
 import AdminLayout from "./layout/admin";
 import TrackPage from "./pages/admin/track";
-import AdminDashboardPage from "./pages/admin/dashboard";
 import AdminCarsPage from "./pages/admin/cars";
 import AdminCarForm from "./pages/admin/cars/form";
 import AdminLogin from "./pages/admin/login";
@@ -14,6 +13,8 @@ import AdminMessagesSelected from "./pages/admin/messages/selected";
 import BookingCreatePage from "./pages/booking/create";
 import AdminBookingsPage from "./pages/admin/bookings";
 import AdminDriversPage from "./pages/admin/drivers";
+import AdminReportsPage from "./pages/admin/reports";
+import AccountPage from "./pages/account";
 
 function App() {
 
@@ -22,6 +23,7 @@ function App() {
       <Routes>
         <Route path="/" element={<ClientLayout />} >
           <Route index element={<HomePage />} />
+          <Route path="account" element={<AccountPage />} />
           <Route path="booking">
             <Route index element={<BookingPage />} />
             <Route path="create" element={<BookingCreatePage />} />
@@ -29,12 +31,13 @@ function App() {
         </Route>
 
         <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboardPage />} />
-          <Route path="dashboard" element={<AdminDashboardPage />} />
+          <Route index element={<AdminReportsPage />} />
+          <Route path="reports" element={<AdminReportsPage />} />
           <Route path="cars">
             <Route index element={<AdminCarsPage />} />
             <Route path="create" element={<AdminCarForm />} />
             <Route path=":id/edit" element={<AdminCarForm />} />
+            <Route path=":id" element={<AdminCarForm />} />
           </Route>
           <Route path="bookings">
             <Route index element={<AdminBookingsPage />} />
