@@ -11,10 +11,15 @@ export const getOverview = async (req, res) => {
 
     const bookings = await prisma.booking.count()
 
+    const clients = await prisma.user.count({
+      where: { isAdmin: false }
+    })
+
     res.status(200).json({
       cars,
       drivers,
-      bookings
+      bookings,
+      clients
     })
     
   } catch (error) {

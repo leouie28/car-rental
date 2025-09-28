@@ -1,55 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import Container from '../../components/Container'
-import { Car, CircleUser, Clock } from 'lucide-react'
+import { Car, CircleUser, Clock, Users } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import dayjs from 'dayjs';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../lib/api';
-
-const data = [
-  {
-    name: 'Page A',
-    uv: 4000,
-    pv: 2400,
-    amt: 2400,
-  },
-  {
-    name: 'Page B',
-    uv: 3000,
-    pv: 1398,
-    amt: 2210,
-  },
-  {
-    name: 'Page C',
-    uv: 2000,
-    pv: 9800,
-    amt: 2290,
-  },
-  {
-    name: 'Page D',
-    uv: 2780,
-    pv: 3908,
-    amt: 2000,
-  },
-  {
-    name: 'Page E',
-    uv: 1890,
-    pv: 4800,
-    amt: 2181,
-  },
-  {
-    name: 'Page F',
-    uv: 2390,
-    pv: 3800,
-    amt: 2500,
-  },
-  {
-    name: 'Page G',
-    uv: 3490,
-    pv: 4300,
-    amt: 2100,
-  },
-];
 
 export default function AdminReportsPage() {
   const [period, setPeriod] = useState('-6')
@@ -89,6 +44,14 @@ export default function AdminReportsPage() {
           <div className='space-y-4'>
             <h3>Overview</h3>
             <div className='flex gap-6 flex-wrap'>
+              <div className="card bg-base-100 w-52">
+                <div className="card-body">
+                  <Users />
+                  <div>
+                    Total Users: <span className='font-semibold'>{overview?.users}</span>
+                  </div>
+                </div>
+              </div>
               <div className="card bg-base-100 w-52">
                 <div className="card-body">
                   <Car />
@@ -138,7 +101,7 @@ export default function AdminReportsPage() {
             </div>
             <div className="card bg-base-100">
               <div className="card-body">
-                <h2 className='card-title mb-4'>Detailed Booking</h2>
+                <h2 className='card-title mb-4'>Booking Per Entry</h2>
                 <ResponsiveContainer width="100%" minHeight={400}>
                   <LineChart
                     width={500}
