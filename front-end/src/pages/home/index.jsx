@@ -101,7 +101,7 @@ export default function index() {
                 >
                   <option value="all">All vehicle types</option>
                   {types?.map((b, i) => (
-                    <option key={i} value={b} className="uppercase">{b.toUpperCase()}</option>
+                    <option key={i} value={b} className="uppercase">{b?.toUpperCase()}</option>
                   ))}
                 </select>
               </fieldset>
