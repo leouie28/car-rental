@@ -27,18 +27,18 @@ export default function AdminCarsPage() {
   })
 
   return (
-    <div className="py-10 min-h-screen">
+    <div className="py-2 lg:py-10 min-h-screen">
       <Container>
         <div>
           <h1 className="text-2xl font-bold mb-4">Cars</h1>
           <div className="card bg-base-100">
             <div className="card-body">
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center gap-2 flex-wrap">
                 <div className="flex items-center gap-2">
                   <input 
                     placeholder="Search car..."
                     type="search"
-                    className="input w-80"
+                    className="input lg:w-80"
                     value={searchText}
                     onChange={(e) => {
                       const val = e.target.value

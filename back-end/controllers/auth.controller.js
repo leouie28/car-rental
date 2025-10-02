@@ -1,6 +1,7 @@
 import prisma from "../lib/prismaClient.js"
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import { sendVerifyEmail } from "../lib/mailer.js"
 
 const JWT_SECRET = process.env.JWT_SECRET || "secret_key"
 
@@ -32,11 +33,31 @@ export const loginAdmin = async (req, res) => {
 export const registerClient = async (req, res) => {
     const paylaod = req.body
     try {
+
+        const codeExist = await prisma.verification.findFirst({
+            where: {
+                code: paylaod.code,
+                email: paylaod.email
+            }
+        })
+
+        if (!codeExist) {
+            return res.status(400).json({
+                ok: false,
+                message: 'Inalid verification code.'
+            })
+        }
+
+        const { code, ...clientRest } = paylaod
         const client = await prisma.user.create({
             data: {
-                ...paylaod,
+                ...clientRest,
                 password: bcrypt.hashSync(paylaod.password, 10)
             }
+        })
+
+        await prisma.verification.deleteMany({
+            where: { email: paylaod.email }
         })
 
         if (client) {
@@ -91,5 +112,38 @@ export const getClientSession = async (req, res) => {
     } catch (error) {
         console.log('Error on getSession:', error);
         res.status(403).send(error)
+    }
+}
+
+export const requestCode = async (req, res) => {
+    try {   
+        const email = req.query.email
+
+        const exist = await prisma.user.findFirst({
+            where: { email }
+        })
+
+        if (exist) {
+            return res.status(400).json({
+                ok: false,
+                message: 'Email already registered.'
+            })
+        }
+
+        const code = (Math.floor(100000 + Math.random() * 900000)).toString()
+
+        await prisma.verification.create({
+            data: {
+                code,
+                email
+            }
+        })
+
+        await sendVerifyEmail(email, code)
+
+        res.status(200).json({ ok: true })
+    } catch (error) {
+        console.log('Error on loginClient:', error);
+        res.status(500).send(error || 'Server Error');
     }
 }

@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
-import { Car, ChartColumnStacked, ChartPie, CircleUser, Clock, MapPinned, Menu, MessageSquareMore } from 'lucide-react';
+import { Car, ChartColumnStacked, ChartPie, CircleUser, Clock, MapPinned, Menu, MessageSquareMore, X } from 'lucide-react';
 import { useSession } from '../context/SessionContext';
 import socket from '../socket';
 
@@ -38,32 +38,39 @@ const navs = [
 ]
 
 export default function AdminLayout() {
-  const { user } = useSession()
+  const { user, loading } = useSession()
   const location = useLocation()
   const { pathname } = location
   const navigate = useNavigate()
+  const [show, setShow] = useState(false)
 
   useEffect(() => {
-    if (!user) return
+    if (loading) return
     if (!user?.isAdmin) {
       navigate("/")
     }
 
     socket.emit("join", "admin")
-  }, [user])
+  }, [user, loading])
   
   return (
     <div className='relative h-full'>
-      <div className='fixed -left-72 lg:left-0 top-0 w-72 h-full bg-black z-10 p-6'>
-        <button className='btn btn-ghost'>
-          <Menu color='white' />
+      <div 
+        className={`${show ? 'left-0' : ''} fixed -left-72 lg:left-0 top-0 w-72 h-full bg-black z-10 p-6 transition-all ease-in-out duration-600`}
+      >
+        <button onClick={() => setShow(false)} className='btn btn-ghost lg:hidden'>
+          <X color='white' />
         </button>
+        {/* <button className='btn btn-ghost hidden lg:inline-flex'>
+          <Menu color='white' />
+        </button> */}
         <ul className="menu rounded-box w-full text-base-300 mt-20 space-y-2">
           {navs.map((nav, i) => (
             <li key={i}>
               <Link 
                 to={nav.path}
                 className={`${pathname === nav.path ? 'bg-primary/90 pointer-events-none' : ''} hover:bg-primary/60`}
+                onClick={() => setShow(false)}
               >
                 {nav.icon}
                 <span>{nav.name}</span>
@@ -73,6 +80,9 @@ export default function AdminLayout() {
         </ul>
       </div>
       <div className='ml-0 lg:ml-72 relative bg-base-300 h-full'>
+        <button onClick={() => setShow(true)} className='lg:hidden btn btn-ghost px-2 mt-2 ml-2 print:hidden'>
+          <Menu color='gray' />
+        </button>
         <Outlet />
       </div>
     </div>

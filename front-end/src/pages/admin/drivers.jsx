@@ -115,12 +115,12 @@ export default function AdminDriversPage() {
           <h1 className="text-2xl font-bold mb-4">Drivers</h1>
           <div className="card bg-base-100">
             <div className="card-body">
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center gap-2 flex-wrap">
                 <div className="flex items-center gap-2">
                   <input
-                    placeholder="Search car..."
+                    placeholder="Search driver..."
                     type="search"
-                    className="input w-80"
+                    className="input lg:w-80"
                     value={searchText}
                     onChange={(e) => {
                       const val = e.target.value;
@@ -142,7 +142,7 @@ export default function AdminDriversPage() {
                     }
                   >
                     <Plus size={18} />
-                    Add new car
+                    Add new driver
                   </button>
                 </div>
               </div>

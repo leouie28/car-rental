@@ -52,7 +52,13 @@ export default function AdminCarForm() {
   }, [car])
 
   const { mutate, isPending } = useMutation({
-    mutationFn: addCar,
+    mutationFn: async () => {
+      const payload = {
+        ...form,
+        dailyPrice: form.dailyPrice || 0
+      }
+      return await addCar(payload)
+    },
     onSuccess: () => {
       setForm(emptyForm)
       navigate("/admin/cars")
@@ -60,7 +66,13 @@ export default function AdminCarForm() {
   })
 
   const { mutate: edit, isPending: isEditLoading } = useMutation({
-    mutationFn: async () => (await api.put(`/admin/car/${carId}`, form)).data,
+    mutationFn: async () => {
+      const payload = {
+        ...form,
+        dailyPrice: form.dailyPrice || 0
+      }
+      return await (await api.put(`/admin/car/${carId}`, payload)).data
+    },
     onSuccess: () => {
       setForm(emptyForm)
       navigate("/admin/cars")
@@ -129,7 +141,7 @@ export default function AdminCarForm() {
                 className=''
               >
                 <h2 className='card-title'>Details</h2>
-                <div className='grid grid-cols-3 gap-3'>
+                <div className='grid grid-cols-2 lg:grid-cols-3 gap-3'>
                   <fieldset className="fieldset">
                     <legend className="fieldset-legend">Brand (Maker)</legend>
                     <input 

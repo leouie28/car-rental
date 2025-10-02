@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Outlet, Link, useNavigate } from "react-router-dom";
+import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import Container from '../components/Container';
 import logo from './../assets/icon.png'
 import { Bell, ChevronDown, Clock, LogOut, MessageSquareMore, User } from 'lucide-react';
@@ -10,13 +10,20 @@ import { useState } from 'react';
 import socket from '../socket';
 
 export default function ClientLayout() {
-  const { user, logout } = useSession()
+  const { user, loading, logout } = useSession()
   const userId = user?.id
+  const location = useLocation()
   const [scrolled, setScrolled] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (!userId) return
+    if (loading) return
+    if (!userId) {
+      if (location.pathname != '/'){
+        navigate('/')
+      }
+      return
+    }
     socket.emit("join", userId)
 
     const interval = setInterval(() => {
@@ -30,7 +37,7 @@ export default function ClientLayout() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [userId])
+  }, [userId, loading])
 
   useEffect(() => {
     const handleScroll = () => {

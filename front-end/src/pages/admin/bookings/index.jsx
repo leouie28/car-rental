@@ -44,7 +44,7 @@ export default function AdminBookingsPage() {
   })
 
   return (
-    <div className="py-10 min-h-screen">
+    <div className="py-2 lg:py-10 min-h-screen">
       <BookingDetails 
         b={selected}
         onClose={() => setSelected(null)}
@@ -55,7 +55,7 @@ export default function AdminBookingsPage() {
           <div className="card bg-base-100">
             <div className="card-body">
               <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center flex-wrap gap-2">
                   <select 
                     className="select w-32"
                     value={status}
@@ -68,20 +68,22 @@ export default function AdminBookingsPage() {
                     <option value="completed">Completed</option>
                     <option value="cancelled">Cancelled</option>
                   </select>
-                  <input 
-                    placeholder="Search booking..."
-                    type="search"
-                    className="input w-80"
-                    value={searchText}
-                    onChange={(e) => {
-                      const val = e.target.value
-                      setSearchText(val)
-                      if (!val) setSearch(val)
-                    }}
-                  />
-                  <button className="btn" onClick={() => setSearch(searchText)}>
-                    Search
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <input 
+                      placeholder="Search booking..."
+                      type="search"
+                      className="input lg:w-80"
+                      value={searchText}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        setSearchText(val)
+                        if (!val) setSearch(val)
+                      }}
+                    />
+                    <button className="btn" onClick={() => setSearch(searchText)}>
+                      Search
+                    </button>
+                  </div>
                 </div>
                 {/* <div>
                   <button 

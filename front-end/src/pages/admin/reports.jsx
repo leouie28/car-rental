@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import Container from '../../components/Container'
-import { Car, CircleUser, Clock, Users } from 'lucide-react'
+import { Car, CircleUser, Clock, Printer, Users } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import dayjs from 'dayjs';
 import { useQuery } from '@tanstack/react-query';
@@ -40,11 +40,22 @@ export default function AdminReportsPage() {
     <div className="py-10 min-h-screen">
       <Container>
         <div className='space-y-6'>
-          <h1 className="text-2xl font-bold mb-4">Reports</h1>
+          <div className='flex justify-between items-center'>
+            <h1 className="text-2xl font-bold mb-4">Reports</h1>
+            <button 
+              className='btn btn-primary print:hidden'
+              onClick={() => {
+                window.print()
+              }}
+            >
+              <Printer size={14} />
+              Print
+            </button>
+          </div>
           <div className='space-y-4'>
             <h3>Overview</h3>
-            <div className='flex gap-6 flex-wrap'>
-              <div className="card bg-base-100 w-52">
+            <div className='grid grid-cols-2 md:flex gap-6 flex-wrap'>
+              <div className="card bg-base-100 w-full md:w-52 print:border border-gray-300">
                 <div className="card-body">
                   <Users />
                   <div>
@@ -52,7 +63,7 @@ export default function AdminReportsPage() {
                   </div>
                 </div>
               </div>
-              <div className="card bg-base-100 w-52">
+              <div className="card bg-base-100 w-full md:w-52 print:border border-gray-300">
                 <div className="card-body">
                   <Car />
                   <div>
@@ -60,7 +71,7 @@ export default function AdminReportsPage() {
                   </div>
                 </div>
               </div>
-              <div className="card bg-base-100 w-52">
+              <div className="card bg-base-100 w-full md:w-52 print:border border-gray-300">
                 <div className="card-body">
                   <CircleUser />
                   <div>
@@ -68,7 +79,7 @@ export default function AdminReportsPage() {
                   </div>
                 </div>
               </div>
-              <div className="card bg-base-100 w-52">
+              <div className="card bg-base-100 w-full md:w-52 print:border border-gray-300">
                 <div className="card-body">
                   <Clock />
                   <div>
@@ -84,7 +95,7 @@ export default function AdminReportsPage() {
                 <legend className="fieldset-legend">Period</legend>
                 <div className='flex gap-2'>
                   <select
-                    className='select w-full md:w-52'
+                    className='select w-full md:w-52 print:w-52'
                     value={period}
                     onChange={(e) => handeChangePeriod(e.target.value)}
                   >
@@ -110,7 +121,7 @@ export default function AdminReportsPage() {
                     margin={{
                       top: 5,
                       right: 30,
-                      left: 20,
+                      // left: 20,
                       bottom: 5,
                     }}
                   >
