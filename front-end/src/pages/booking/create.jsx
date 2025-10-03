@@ -249,7 +249,9 @@ export default function BookingCreatePage() {
               </div>
               {/* <div className="divider"></div> */}
               <div className='flex gap-3 justify-end'>
-                <button disabled={isPending} type="button" className='btn btn-ghost'>
+                <button 
+                  onClick={() => navigate('/')}
+                  disabled={isPending} type="button" className='btn btn-ghost'>
                   BACK TO CAR LIST
                 </button>
                 <button disabled={isPending} type="submit" className='btn btn-primary'>

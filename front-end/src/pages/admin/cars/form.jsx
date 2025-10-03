@@ -55,7 +55,9 @@ export default function AdminCarForm() {
     mutationFn: async () => {
       const payload = {
         ...form,
-        dailyPrice: form.dailyPrice || 0
+        dailyPrice: Number(form.dailyPrice??'0'),
+        securityDeposit: Number(form.securityDeposit??'0'),
+        withDriverDailyPrice: Number(form.withDriverDailyPrice??'0')
       }
       return await addCar(payload)
     },

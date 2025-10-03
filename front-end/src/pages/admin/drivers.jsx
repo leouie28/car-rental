@@ -24,7 +24,7 @@ export default function AdminDriversPage() {
     refetchOnWindowFocus: false,
   });
 
-  const { mutate } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: async () => (await api.post("/admin/driver", form)).data,
     onSuccess: (data) => {
       refetch();
@@ -37,13 +37,34 @@ export default function AdminDriversPage() {
     },
   });
 
+  const { mutate:editMt, isPending: editLoading } = useMutation({
+    mutationFn: async () => (await api.put(`/admin/driver/${form?.id}`, form)).data,
+    onSuccess: (data) => {
+      refetch();
+      document.getElementById("create_driver_modal")?.close();
+      setForm({
+        name: "",
+        licenseId: "",
+        licenseExpire: "",
+      });
+    },
+  });
+
+  const { mutate:deleteMt, isPending: deleteLoading } = useMutation({
+    mutationFn: async (id) => (await api.delete(`/admin/driver/${id}`)).data,
+    onSuccess: (data) => {
+      refetch();
+    },
+  });
+
   return (
     <div className="py-10 min-h-screen">
       <dialog id="create_driver_modal" className="modal">
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            mutate();
+            if (form?.id) editMt()
+            else mutate();
           }}
           className="modal-box w-full max-w-lg"
         >
@@ -98,11 +119,22 @@ export default function AdminDriversPage() {
             </fieldset>
           </div>
           <div className="modal-action">
-            <button onClick={() => document.getElementById('create_driver_modal').close()} type="button" className="btn btn-ghost">
+            <button 
+              onClick={() => {
+                setForm({
+                  name: "",
+                  licenseId: "",
+                  licenseExpire: "",
+                })
+                document.getElementById('create_driver_modal').close()
+              }} 
+              type="button" 
+              className="btn btn-ghost"
+            >
               Cancel
             </button>
             <button type="submit" className="btn btn-primary">
-              Create
+              {form?.id ? 'Update' : 'Create'}
             </button>
           </div>
         </form>
@@ -166,11 +198,26 @@ export default function AdminDriversPage() {
                         <td>{dayjs(d?.licenseExpire).format('MMM DD, YYYY')}</td>
                         <td>{dayjs(d?.createdAt).format("MMM DD, YYYY")}</td>
                         <td>
-                          <button className="btn text-primary btn-ghost btn-sm">
+                          <button 
+                            className="btn text-primary btn-ghost btn-sm"
+                            onClick={() => {
+                              setForm(d)
+                              setTimeout(() => {
+                                document?.getElementById('create_driver_modal')?.showModal()
+                              }, 200)
+                            }}
+                          >
                             <SquarePen size={14} />
                             Edit
                           </button>
-                          <button className="btn text-error btn-ghost btn-sm">
+                          <button 
+                            className="btn text-error btn-ghost btn-sm"
+                            onClick={() => {
+                              if (confirm("Are you sure you want to delete this car?")) {
+                                deleteMt(d?.id)
+                              }
+                            }}
+                          >
                             <Trash2 size={14} />
                             Delete
                           </button>

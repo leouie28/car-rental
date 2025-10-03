@@ -5,6 +5,7 @@ export const getDrivers = async (req, res) => {
         const search = req.query.search
 
         const whereInput = {
+            deletedAt: null,
             OR: search ? [
                 {
                     name: {
@@ -28,7 +29,7 @@ export const getDrivers = async (req, res) => {
         })
         const rows = await prisma.driver.findMany({
             where: {
-                ...whereInput
+                ...whereInput,
             },
             orderBy: {
                 id: "desc"
@@ -51,6 +52,39 @@ export const createDriver = async (req, res) => {
         
         await prisma.driver.create({
             data: body
+        })
+
+        res.status(200).json({ success: true })
+    } catch (error) {
+        console.log('Error on createDriver:', error);
+        res.status(500).send(error);
+    }
+}
+
+export const editDriver = async (req, res) => {
+    const body = req.body
+    const { id } = req.params
+    try {
+        
+        await prisma.driver.update({
+            where: { id: parseInt(id) },
+            data: body
+        })
+
+        res.status(200).json({ success: true })
+    } catch (error) {
+        console.log('Error on createDriver:', error);
+        res.status(500).send(error);
+    }
+}
+
+export const deleteDriver = async (req, res) => {
+    const { id } = req.params
+    try {
+        
+        await prisma.driver.update({
+            where: { id: parseInt(id) },
+            data: { deletedAt: new Date() }
         })
 
         res.status(200).json({ success: true })
