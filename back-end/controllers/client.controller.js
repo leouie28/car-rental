@@ -1,4 +1,46 @@
 import prisma from "../lib/prismaClient.js"
+import bcrypt from 'bcryptjs'
+
+export const clientInfo = async (req, res) => {
+    try {
+        const userId = req.userId
+
+        const client = await prisma.user.findFirst({
+            where: {
+                id: parseInt(userId)
+            }
+        })
+
+        const { password, ...restClient } = client
+
+        res.status(200).json(restClient);
+    } catch (error) {
+        console.log('Error on getLicense:', error);
+        res.status(500).send(error)
+    }
+}
+
+export const updateClient = async (req, res) => {
+    try {
+        const payload = req.body
+        const userId = req.userId
+
+        await prisma.user.update({
+            data: {
+                ...payload,
+                password: payload?.password ? bcrypt.hashSync(payload.password, 10) : undefined,
+            },
+            where: {
+                id: parseInt(userId)
+            }
+        })
+
+        res.status(200).json({ ok: true });
+    } catch (error) {
+        console.log('Error on getLicense:', error);
+        res.status(500).send(error)
+    }
+}
 
 export const getLicense = async (req, res) => {
     try {

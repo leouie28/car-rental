@@ -5,6 +5,7 @@ import { getCars } from '../../../rest/admin/car'
 import { Ellipsis, Eye, Plus, SquarePen, Trash2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../../lib/api";
+import toast from 'react-hot-toast'
 
 export default function AdminCarsPage() {
   const navigate = useNavigate()
@@ -22,6 +23,7 @@ export default function AdminCarsPage() {
   const { mutate: deleteMt, isPending } = useMutation({
     mutationFn: async (id) => (await api.delete(`/admin/car/${id}`)).data,
     onSuccess: (data) => {
+      toast.success('Cars successfully deleted')
       refetch()
     }
   })

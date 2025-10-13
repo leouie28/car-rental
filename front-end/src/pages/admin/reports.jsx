@@ -59,7 +59,7 @@ export default function AdminReportsPage() {
                 <div className="card-body">
                   <Users />
                   <div>
-                    Total Users: <span className='font-semibold'>{overview?.users}</span>
+                    Total Customers: <span className='font-semibold'>{overview?.clients}</span>
                   </div>
                 </div>
               </div>

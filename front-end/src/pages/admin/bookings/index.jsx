@@ -8,6 +8,7 @@ import { getBookings, updateBookingStatus } from "../../../rest/admin/booking";
 import dayjs from "dayjs";
 import api from "../../../lib/api";
 import BookingDetails from "../../../components/BookingDetails";
+import toast from 'react-hot-toast'
 
 export default function AdminBookingsPage() {
   const navigate = useNavigate()
@@ -26,19 +27,23 @@ export default function AdminBookingsPage() {
   })
 
   const { data: drivers } = useQuery({
-    queryKey: 'drivers',
+    queryKey: ['drivers'],
     queryFn: async () => (await api.get('/admin/driver')).data
   })
 
   const { mutate } = useMutation({
     mutationFn: updateBookingStatus,
-    onSuccess: () => refetch()
+    onSuccess: () => {
+      toast.success('Booking successfully updated')
+      refetch()
+    }
   })
 
   const { mutate: assignDriverMt } = useMutation({
     mutationFn: async (d) => await api.put(`/admin/booking/${d.id}/assign-driver`, { driverId: d.driverId }),
     onSuccess: () => {
-      alert('Driver successfully assigned.')
+      // alert('Driver successfully assigned.')
+      toast.success('Driver successfully assigned')
       refetch()
     }
   })

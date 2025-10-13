@@ -6,6 +6,7 @@ import { Ellipsis, Eye, Plus, SquarePen, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import api from "../../lib/api";
+import toast from 'react-hot-toast'
 
 export default function AdminDriversPage() {
   const navigate = useNavigate();
@@ -27,6 +28,7 @@ export default function AdminDriversPage() {
   const { mutate, isPending } = useMutation({
     mutationFn: async () => (await api.post("/admin/driver", form)).data,
     onSuccess: (data) => {
+      toast.success('Driver successfully added')
       refetch();
       document.getElementById("create_driver_modal")?.close();
       setForm({
@@ -41,6 +43,7 @@ export default function AdminDriversPage() {
     mutationFn: async () => (await api.put(`/admin/driver/${form?.id}`, form)).data,
     onSuccess: (data) => {
       refetch();
+      toast.success('Driver successfully updated')
       document.getElementById("create_driver_modal")?.close();
       setForm({
         name: "",
@@ -53,6 +56,7 @@ export default function AdminDriversPage() {
   const { mutate:deleteMt, isPending: deleteLoading } = useMutation({
     mutationFn: async (id) => (await api.delete(`/admin/driver/${id}`)).data,
     onSuccess: (data) => {
+      toast.success('Driver successfully deleted')
       refetch();
     },
   });

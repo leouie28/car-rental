@@ -13,7 +13,7 @@ export default function AdminLogin() {
       const res = await api.post("/auth/admin/login", { username, password })
       localStorage.setItem("token", res.data?.token)
       setTimeout(() => {
-        window.location.href = '/admin/cars'
+        window.location.href = '/admin/reports'
       }, 500)
     } catch (error) {
       console.log(error)

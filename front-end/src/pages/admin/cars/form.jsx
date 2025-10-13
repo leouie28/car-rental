@@ -7,6 +7,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import api from '../../../lib/api'
 import { useEffect } from 'react'
 import { useLocation } from "react-router-dom";
+import toast from 'react-hot-toast'
 
 const emptyForm = {
   type: "",
@@ -62,6 +63,7 @@ export default function AdminCarForm() {
       return await addCar(payload)
     },
     onSuccess: () => {
+      toast.success('Car successfully added')
       setForm(emptyForm)
       navigate("/admin/cars")
     }
@@ -76,6 +78,7 @@ export default function AdminCarForm() {
       return await (await api.put(`/admin/car/${carId}`, payload)).data
     },
     onSuccess: () => {
+      toast.success('Car successfully updated')
       setForm(emptyForm)
       navigate("/admin/cars")
     }
