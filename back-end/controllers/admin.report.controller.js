@@ -46,7 +46,8 @@ export const getDetailed = async (req, res) => {
     const end = dayjs(req.query.end).format('YYYY-MM-DD')
     const days = comleteDays(start, end)
 
-    const rawPerTotal = await prisma.$queryRaw`
+    const [rawPerTotal, booking, income] = await Promise.all([
+      prisma.$queryRaw`
       SELECT
         DATE("createdAt") as date,
         COUNT("id") as total
@@ -57,11 +58,40 @@ export const getDetailed = async (req, res) => {
       GROUP BY
         DATE("createdAt")
       ORDER BY
-        DATE("createdAt") ASC;`
+        DATE("createdAt") ASC;`,
+      prisma.booking.findMany({
+        where: {
+          status: {
+            in: ['completed', 'paid', 'confirmed']
+          },
+          updatedAt: {
+            gte: dayjs(start).startOf('day').toDate(),
+            lte: dayjs(end).endOf('day').toDate(),
+          }
+        },
+        include: { car: true, user: true, driver: true },
+        orderBy: { updatedAt: 'desc' }
+      }),
+      prisma.booking.groupBy({
+        by: ['withDriver'],
+        where: {
+          status: {
+            in: ['completed', 'paid', 'confirmed']
+          },
+        },
+        _sum: {
+          totalPrice: true
+        }
+      })
+    ])
     
     const perTotalMapped = new Map(rawPerTotal.map((r) => [dayjs(r.date).format('YYYY-MM-DD'), Number(r.total)]))
-
-    res.status(200).json([...days].map((date) => ({ date, total: perTotalMapped.get(date) || 0 })))
+    const parsedIncome = income.map((d) => ({ withDriver: d.withDriver, total: Number(d._sum.totalPrice) }))
+    res.status(200).json({
+      linedata: [...days].map((date) => ({ date, total: perTotalMapped.get(date) || 0 })),
+      booking,
+      income: { withDriver: parsedIncome.find((x) => x.withDriver).total, selfDrive: parsedIncome.find((x) => !x.withDriver).total } 
+    })
     
   } catch (error) {
     console.log('Error on getCars:', error);

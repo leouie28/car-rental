@@ -100,7 +100,7 @@ export default function index() {
                   required={!filters.dateStart && !filters.dateReturn}
                 >
                   <option value="all">All vehicle types</option>
-                  {types?.map((b, i) => (
+                  {types?.filter(x => x)?.map((b, i) => (
                     <option key={i} value={b} className="uppercase">{b?.toUpperCase()}</option>
                   ))}
                 </select>
@@ -144,7 +144,11 @@ export default function index() {
         <div className="my-10">
           <h2 className="text-2xl">Our car list</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mt-4">
-            {data?.rows?.map((d, i) => (
+            {isFetching ? 
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="w-full h-120 rounded-xl animate-pulse bg-gray-200"></div>
+              ))
+            : data?.rows?.map((d, i) => (
               <div key={d?.id || i} className="group cursor-pointer card border border-base-300 hover:shadow">
                 {d.images.length ? (
                   <figure className="aspect-video w-full">
