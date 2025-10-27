@@ -8,7 +8,8 @@ export const clientInfo = async (req, res) => {
         const client = await prisma.user.findFirst({
             where: {
                 id: parseInt(userId)
-            }
+            },
+            include: { license: { include: { images: true } } }
         })
 
         const { password, ...restClient } = client

@@ -62,6 +62,15 @@ export default function BookingDetails({ b, onClose }) {
           <li>Client Name: {b?.user?.firstName} {b?.user?.lastName}</li>
           <li>Client Phone Number: {b?.user?.phone}</li>
           <li>Client Email: <span className='lowercase'>{b?.user?.email}</span></li>
+          {!b?.withDriver && (
+            <li>Client License: 
+              <div className='flex gap-4 flex-wrap'>
+                {b?.user?.license[0]?.images?.map((img, i) => (
+                  <img key={i} src={img?.base64} className='aspect-[3/2] w-52 rounded-lg' />
+                ))}
+              </div>
+            </li>
+          )}
         </ul>
       </div>
       <form method="dialog" className="modal-backdrop">

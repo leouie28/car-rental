@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import api from "../../lib/api";
 import toast from 'react-hot-toast'
+import TableLoader from "../../components/TableLoader";
 
 export default function AdminDriversPage() {
   const navigate = useNavigate();
@@ -195,7 +196,7 @@ export default function AdminDriversPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {data?.rows.map((d, i) => (
+                    { isLoading ? <TableLoader colCount={5} /> : data?.rows.map((d, i) => (
                       <tr key={d.id}>
                         <td>{d?.name}</td>
                         <td>{d?.licenseId}</td>

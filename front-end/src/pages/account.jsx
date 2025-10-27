@@ -146,6 +146,16 @@ export default function AccountPage() {
                   disabled={!isEdit}
                 />
               </fieldset>
+              {user?.license?.length > 0 && !isEdit &&  (
+                <fieldset className="fieldset">
+                  <legend className="fieldset-legend">License</legend>
+                  <div className='flex gap-4 flex-wrap'>
+                    {user?.license[0]?.images?.map((img, i) => (
+                      <img key={i} src={img?.base64} className='aspect-[3/2] w-52 rounded-lg' />
+                    ))}
+                  </div>
+                </fieldset>
+              )}
             </div>
             <div className='flex justify-end gap-2'>
               {isEdit ? (

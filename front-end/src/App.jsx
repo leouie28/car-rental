@@ -15,6 +15,7 @@ import AdminBookingsPage from "./pages/admin/bookings";
 import AdminDriversPage from "./pages/admin/drivers";
 import AdminReportsPage from "./pages/admin/reports";
 import AccountPage from "./pages/account";
+import AdminDashboardPage from "./pages/admin/dashboard";
 
 function App() {
 
@@ -31,7 +32,8 @@ function App() {
         </Route>
 
         <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminReportsPage />} />
+          <Route index element={<AdminDashboardPage />} />
+          <Route path="dashboard" element={<AdminDashboardPage />} />
           <Route path="reports" element={<AdminReportsPage />} />
           <Route path="cars">
             <Route index element={<AdminCarsPage />} />

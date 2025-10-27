@@ -62,7 +62,7 @@ export const getBookings = async (req, res) => {
                 car: {
                     include: { images: true }
                 },
-                user: true
+                user: { include: { license: { include: { images: true } } } }
             },
             orderBy: {
                 id: "desc"

@@ -9,6 +9,7 @@ import dayjs from "dayjs";
 import api from "../../../lib/api";
 import BookingDetails from "../../../components/BookingDetails";
 import toast from 'react-hot-toast'
+import TableLoader from "../../../components/TableLoader";
 
 export default function AdminBookingsPage() {
   const navigate = useNavigate()
@@ -125,7 +126,8 @@ export default function AdminBookingsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {data?.rows.map((d, i) => (
+                    { isLoading ? <TableLoader colCount={10} /> :
+                    data?.rows.map((d, i) => (
                       <tr key={d.id}>
                         <td>
                           <div className="flex items-center gap-2">

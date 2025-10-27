@@ -6,6 +6,7 @@ import { Ellipsis, Eye, Plus, SquarePen, Trash2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../../lib/api";
 import toast from 'react-hot-toast'
+import TableLoader from "../../../components/TableLoader";
 
 export default function AdminCarsPage() {
   const navigate = useNavigate()
@@ -82,7 +83,7 @@ export default function AdminCarsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {data?.rows.map((d, i) => (
+                    { isLoading ? <TableLoader colCount={8} /> : data?.rows.map((d, i) => (
                       <tr key={d.id}>
                         <td>{d?.make} - {d?.model} {d?.year} ({d?.color})</td>
                         {/* <td>{d?.make}</td>
